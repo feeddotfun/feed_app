@@ -47,7 +47,7 @@ export interface IMemeContribution extends Document {
     amount: number;
 }
 
-export interface INews extends Document {
+export interface IMemeNews extends Document {
     _id: Schema.Types.ObjectId;
     news: string;
     meme: string;
