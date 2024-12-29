@@ -45,12 +45,20 @@ export interface MemeArenaSessionData {
 export interface MemeArenaData {
     session: MemeArenaSessionData;
     memes: MemeData[];
-  }
+}
 
+// DTOs
 export interface CreateMemeDto {
     session: string;
     name: string;
     ticker: string;
     description: string;
     image: string;
-  }
+}
+
+export interface CreateMemeVoteDto {
+    session: string;
+    meme: string;
+    voter: string;
+    voterIpAddress: string;
+}

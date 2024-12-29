@@ -7,13 +7,17 @@ import { connectToDatabase } from "../database/mongoose";
 import MemeArenaSession from "../database/models/meme-arena-session.model";
 import Meme from '../database/models/meme.model';
 import SystemConfig from "../database/models/system-config.model";
+import MemeVote from "../database/models/meme-vote.model";
 
-// ** SSE
+// ** SSE & Services
 import { sendUpdate } from "./sse";
+import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
 
 // ** Utils
 import { transformMeme, transformSession } from "../utils";
-import { CreateMemeDto, MemeArenaData, MemeData } from "@/types";
+
+// ** Types
+import { CreateMemeDto, CreateMemeVoteDto, MemeArenaData, MemeData } from "@/types";
 import { IMeme, IMemeArenaSession } from "../database/types";
 
 
@@ -126,3 +130,98 @@ export async function getActiveSessionMemes() {
   
   return transformedData; 
 }
+
+// ** Vote for a meme
+export async function createMemeVote(createMemeDto: Partial<CreateMemeVoteDto>): Promise<MemeData> {
+  await connectToDatabase()
+  const sanitized = sanitize(createMemeDto);
+  const session = await MemeArenaSession.findById({ _id: sanitized.session });
+  if (!session || !['Voting', 'LastVoting'].includes(session.status)) {
+      throw new Error('Invalid session or voting not active');
+  }
+
+  const { voter, voterIpAddress } = sanitized;
+  
+  const existingVote = await MemeVote.findOne({ session: session._id, $or: [{ voter }, { voterIpAddress }] });
+  if (existingVote) {
+    throw new Error('You have already voted in this session');
+  }
+
+  await MemeVote.create(sanitized);
+
+  const updatedMeme = await Meme.findByIdAndUpdate(
+      sanitized.meme, 
+      { $inc: { totalVotes: 1 } },
+      { new: true }
+    );
+
+    if (!updatedMeme) {
+      throw new Error('Meme not found');
+    }
+
+  const transformedMeme = transformMeme(updatedMeme);
+
+  sendUpdate({ type: 'vote-update', meme: transformedMeme}); 
+
+  if (updatedMeme.totalVotes === session.votingThreshold && session.status === 'Voting') {
+    await startLastVotingOnSession(session.id.toString());
+  }
+
+  return transformedMeme;
+}
+
+// ** Start last voting on session
+export async function startLastVotingOnSession(sessionId: string) {
+  await connectToDatabase();
+  const sanitized = sanitize(sessionId);
+  const dbSession = await mongoose.startSession();
+ 
+  try {
+    dbSession.startTransaction();
+ 
+    const session = await MemeArenaSession.findById({ _id: sanitized }).session(dbSession);
+    if (!session || session.status !== 'Voting') {
+      throw new Error('Invalid session or wrong status');
+    }
+ 
+    const now = Date.now();
+    
+    const timerService = MemeArenaTimerService.getInstance();
+    const timerResult = await timerService.scheduleVotingEnd(sessionId, session.votingTimeLimit);
+    
+    if (!timerResult.success) {
+      throw new Error('Failed to schedule voting end');
+    }
+        
+    const updatedSession = await MemeArenaSession.findByIdAndUpdate(
+      sessionId, 
+      { 
+        votingEndTime: timerResult.scheduledTime,
+        status: 'LastVoting',
+        lastUpdateTime: now
+      }, 
+      { new: true, session: dbSession }
+    );
+ 
+    if (!updatedSession) {
+      throw new Error('Failed to update session');
+    }
+ 
+    await dbSession.commitTransaction();
+ 
+    sendUpdate({ 
+      type: 'voting-threshold-reached',
+      session: transformSession(updatedSession as IMemeArenaSession),
+      votingEndTime: timerResult?.scheduledTime?.toISOString(),
+      sessionId: session.id.toString(),
+      timestamp: now
+    });
+ 
+    return updatedSession;
+  } catch (error) {
+    await dbSession.abortTransaction();
+    throw error;
+  } finally {
+    dbSession.endSession();
+  }
+ }
