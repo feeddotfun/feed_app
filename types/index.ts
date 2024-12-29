@@ -22,6 +22,7 @@ export interface MemeData {
     isWinner: boolean;
     session: string;
     memeProgramId: string;
+    isFromNews?: boolean;
     tokenMintAddress: string;
 }
 
@@ -47,6 +48,15 @@ export interface MemeArenaData {
     memes: MemeData[];
 }
 
+export interface MemeContributionData {
+    id: string;
+    meme: string;
+    session: string;
+    contributor: string;
+    contributorIpAddress: string;
+    amount: number;  
+}
+
 // DTOs
 export interface CreateMemeDto {
     session: string;
@@ -61,4 +71,23 @@ export interface CreateMemeVoteDto {
     meme: string;
     voter: string;
     voterIpAddress: string;
+}
+
+export interface CreateMemeContributionDto {
+    session: string;
+    meme: string;
+    contributor: string;
+    contributorIpAddress: string;
+    amount: number;
+}
+
+export interface CheckContributionEligibilityDto {
+    memeId: string;
+    contributor: string;
+}
+
+export interface CreateContributeDto {
+    memeProgramId: string;
+    amount: string;
+    contributor: string;
 }

@@ -6,6 +6,7 @@ import { SolanaWalletProvider } from '@/components/providers/solana-wallet-provi
 
 import '../styles/globals.css';
 import '../styles/solana-wallet.css';
+import QueryProvider from '@/components/providers/query-provider';
 
 const jetBrainsMono = JetBrains_Mono({ 
   subsets: ['latin'],
@@ -24,17 +25,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className='dark'>
       <body
         className={`${jetBrainsMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <NextTopLoader showSpinner={false} />
-        <ThemeProvider>
-          <SolanaWalletProvider>
-            {children}
-          </SolanaWalletProvider>
-        </ThemeProvider>
+        <NextTopLoader showSpinner={false} color='#99FF19' />
+        <QueryProvider>
+            <SolanaWalletProvider>
+              {children}
+            </SolanaWalletProvider>
+        </QueryProvider>
       </body>
     </html>
   );

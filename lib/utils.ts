@@ -1,10 +1,36 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { IMeme, IMemeArenaSession } from "./database/types";
-import { MemeArenaSessionData, MemeData } from "@/types";
+import { IMeme, IMemeArenaSession, IMemeContribution } from "./database/types";
+import { MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export const formatTime = (time: number): string => {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+export const formatPhaseString = (status: string) => {
+  switch (status) {
+    case 'Voting':
+      return 'Voting';
+    case 'LastVoting':
+      return 'Last Voting';
+    case 'Contributing':
+      return 'Contributing';
+    case 'Completed':
+      return 'Completed';
+    default:
+      return 'Unknown';
+  }
+}
+
+export function convertLamportsToSol(lamports: number): number {
+  const LAMPORTS_PER_SOL = 1_000_000_000;
+  return lamports / LAMPORTS_PER_SOL;
 }
 
 // ** Helpers
@@ -39,5 +65,16 @@ export function transformSession(session: IMemeArenaSession): MemeArenaSessionDa
     contributeEndTime: session.contributeEndTime,   
     totalContributions: session.totalContributions, 
     tokenMintAddress: session.tokenMintAddress,
+  };
+}
+
+export function transformContribution(contribution: IMemeContribution): MemeContributionData {
+  return {
+    id: contribution._id.toString(),
+    meme: contribution.meme.toString(),
+    session: contribution.session.toString(),
+    contributor: contribution.contributor,
+    contributorIpAddress: contribution.contributorIpAddress,
+    amount: contribution.amount,
   };
 }

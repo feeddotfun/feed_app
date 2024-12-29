@@ -50,4 +50,13 @@ export class MemeArenaTimerService {
   async scheduleVotingEnd(sessionId: string, votingTimeLimit: number) {
     return this.scheduleEvent('/api/timer/voting-end', sessionId, votingTimeLimit);
   }
+
+  async scheduleContributingEnd(sessionId: string, contributeFundingLimit: number) {
+    return this.scheduleEvent('/api/timer/contributing-end', sessionId, contributeFundingLimit);
+  }
+
+  async scheduleNextSession(sessionId: string, nextSessionDelay: number) {
+    return this.scheduleEvent('/api/timer/start-session', sessionId, nextSessionDelay);
+  }
+  
 }
