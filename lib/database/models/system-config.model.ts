@@ -23,19 +23,34 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument>({
         type: Number,
         default: 1 * 60 * 1000, // 5 minutes
         min: 1 * 60 * 1000, // Min 1 minute
-        max: 60 * 60 * 1000 // Max 1 hour
+        max: 60 * 60 * 1000, // Max 1 hour
+        options: [1, 3, 5, 10].map(min => min * 60 * 1000)
       },
     nextSessionDelay: {
         type: Number,
         default: 1 * 60 * 1000, // 5 minutes
         min: 1 * 60 * 1000, // Min 1 minute
-        max: 24 * 60 * 60 * 1000 // Max 24 hours
+        max: 24 * 60 * 60 * 1000, // Max 24 hours
+        options: [5, 10, 15, 30].map(min => min * 60 * 1000)
      },
      contributeFundingLimit: {
         type: Number,
         default: 1 * 60 * 1000, // 5 minutes 
         min: 1 * 60 * 1000, // Min 1 minute
-     }
+        options: [3, 5, 10, 15].map(min => min * 60 * 1000)
+     },
+     minContributionSol: {
+        type: Number,
+        default: 0.1,
+        min: 0.1,
+        options: [0.1, 0.2, 0.3, 0.5]
+      },
+      maxContributionSol: {
+        type: Number,
+        default: 1,
+        min: 0.5,
+        options: [0.5, 1, 1.5, 2]
+      }
 }, { timestamps: true })
 
 SystemConfigSchema.statics.getConfig = async function(): Promise<ISystemConfigDocument> {
@@ -49,10 +64,15 @@ SystemConfigSchema.statics.getConfig = async function(): Promise<ISystemConfigDo
   catch (error) {
     throw error;
   }
-
-
 };
-  
+
+// Helper method to get options for a setting
+SystemConfigSchema.methods.getOptionsForSetting = function(settingKey: string) {
+  const schema = this.schema.obj[settingKey];
+  return schema?.options || [];
+};
+
 const SystemConfig = models.SystemConfig || model<ISystemConfigDocument, ISystemConfigModel>('SystemConfig', SystemConfigSchema);
 
 export default SystemConfig as ISystemConfigModel;
+

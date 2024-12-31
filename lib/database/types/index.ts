@@ -1,11 +1,30 @@
 import { Document, Schema, SchemaOptions, Types } from 'mongoose';
 
+export interface SystemConfigSetting {
+  type: any;
+  default: number;
+  min?: number;
+  max?: number;
+  options: number[];
+}
+export interface SystemConfigSchema {
+  maxMemesPerSession: SystemConfigSetting;
+  votingThreshold: SystemConfigSetting;
+  votingTimeLimit: SystemConfigSetting;
+  nextSessionDelay: SystemConfigSetting;
+  contributeFundingLimit: SystemConfigSetting;
+  minContributionSol: SystemConfigSetting;
+  maxContributionSol: SystemConfigSetting;
+}
 export interface ISystemConfig  {
     maxMemesPerSession: number;
     votingThreshold: number;
     votingTimeLimit: number;
     nextSessionDelay: number;
     contributeFundingLimit: number;
+    minContributionSol: number;
+    maxContributionSol: number;
+    getOptionsForSetting(settingKey: string): number[];
 }
 
 export interface IMeme extends Document {
@@ -53,6 +72,21 @@ export interface IMemeNews extends Document {
     meme: string;
     name: string;
     ticker: string;
+}
+
+export interface ISystemConfigVotes {
+  settingKey: string;
+  optionValue: number;
+  votes: number;
+  lastResetTime: Date;
+}
+
+export interface ISystemConfigCommunityVote {
+  voter: string; 
+  voterIpAddress: string;
+  settingKey: string; 
+  selectedValue: number;
+  votedAt: Date;
 }
 
 type DocumentType<T> = T & Document;

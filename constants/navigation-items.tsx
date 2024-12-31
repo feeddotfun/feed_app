@@ -26,8 +26,8 @@ export const navigationItems: NavItem[] = [
     label: 'My Investments'
   },
   {
-    title: 'Community Settings',
-    href: '/community-settings',
+    title: 'Community Setting',
+    href: '/community-setting',
     icon: 'settings',
   }
   

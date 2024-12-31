@@ -1,4 +1,5 @@
 import { Icons } from "@/components/ui/icon";
+import { QueryClient } from "@tanstack/react-query";
 
 export interface NavItem {
     title: string;
@@ -11,6 +12,14 @@ export interface NavItem {
 }
 
 export type SessionStatus = 'Voting' | 'LastVoting' | 'Contributing' | 'Completed';
+
+export const SYSTEM_CONFIG_OPTIONS = {
+    minContributionSol: [0.1, 0.3, 0.5, 1.0],
+    maxContributionSol: [0.5, 1.0, 1.5, 2.0],
+    votingTimeLimit: [1, 3, 5, 10].map(min => min * 60 * 1000),
+    nextSessionDelay: [1, 5, 15, 30].map(min => min * 60 * 1000),
+    contributeFundingLimit: [1, 5, 7, 10].map(min => min * 60 * 1000)
+  } as const;
 
 export interface MemeData {
     id: string;
@@ -57,6 +66,20 @@ export interface MemeContributionData {
     amount: number;  
 }
 
+export interface SystemConfigVoteData {
+    settingKey: string;
+    optionValue: number;
+    votes: number;
+}
+
+
+
+
+export * from './community-setting'
+
+
+
+
 // DTOs
 export interface CreateMemeDto {
     session: string;
@@ -91,3 +114,10 @@ export interface CreateContributeDto {
     amount: string;
     contributor: string;
 }
+
+export interface CreateSystemSettingVoteDto {
+    voter: string;
+    voterIpAddress: string;
+    settingKey: string;
+    selectedValue: number;
+  }

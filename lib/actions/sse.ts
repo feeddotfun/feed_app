@@ -1,37 +1,140 @@
 import { v4 as uuidv4 } from 'uuid';
 
-type Client = {
+interface Client {
   id: string;
   controller: ReadableStreamDefaultController;
-};
+  lastEventId: string;
+  lastActiveAt: number;
+}
 
-let clients: Client[] = [];
+interface EventMessage {
+  id: string;
+  type: string;
+  data: any;
+  timestamp: number;
+}
+
+// Use Map for better performance with frequent lookups and deletions
+const clients = new Map<string, Client>();
+
+// Keep track of recent events for missed message recovery
+const recentEvents = new Map<string, EventMessage>();
+const MAX_EVENTS = 100; // Limit stored events
+const EVENT_TTL = 5 * 60 * 1000; // 5 minutes retention
 
 export function addClient(controller: ReadableStreamDefaultController): string {
   const id = uuidv4();
-  clients.push({ id, controller });
-  console.log('New client connected:', id);
+  
+  clients.set(id, {
+    id,
+    controller,
+    lastEventId: '',
+    lastActiveAt: Date.now()
+  });
+
+  console.log(`Client connected: ${id}. Total clients: ${clients.size}`);
+  
+  // Send initial connection confirmation
+  sendEventToClient(id, {
+    type: 'connection-established',
+    data: { clientId: id }
+  });
+
   return id;
 }
 
 export function removeClient(id: string) {
-  clients = clients.filter(client => client.id !== id);
-  console.log('Client disconnected:', id);
+  clients.delete(id);
+  console.log(`Client disconnected: ${id}. Total clients: ${clients.size}`);
+}
+
+function sendEventToClient(clientId: string, eventData: any) {
+  const client = clients.get(clientId);
+  if (!client) return;
+
+  const event: EventMessage = {
+    id: uuidv4(),
+    type: eventData.type,
+    data: eventData,
+    timestamp: Date.now()
+  };
+
+  const encoder = new TextEncoder();
+  const message = `id: ${event.id}\ntype: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`;
+
+  try {
+    client.controller.enqueue(encoder.encode(message));
+    client.lastEventId = event.id;
+    client.lastActiveAt = Date.now();
+    
+    console.log(`Event sent to client ${clientId}:`, event.type);
+  } catch (error) {
+    console.error(`Failed to send event to client ${clientId}:`, error);
+    removeClient(clientId);
+  }
 }
 
 export function sendUpdate(data: any) {
-  console.log('Sending update:', data);
-  const encoder = new TextEncoder();
-  const message = `data: ${JSON.stringify(data)}\n\n`;
-  const encoded = encoder.encode(message);
+  const eventId = uuidv4();
+  const event: EventMessage = {
+    id: eventId,
+    type: data.type,
+    data,
+    timestamp: Date.now()
+  };
 
-  clients.forEach(client => {
-    try {
-      client.controller.enqueue(encoded);
-      console.log('Update sent to client', client.id);
-    } catch (err) {
-      console.error('Failed to send update to client', client.id, err);
-      removeClient(client.id);
-    }
+  // Store event for potential replay
+  storeEvent(event);
+
+  // Broadcast to all clients
+  clients.forEach((_, clientId) => {
+    sendEventToClient(clientId, data);
   });
 }
+
+function storeEvent(event: EventMessage) {
+  recentEvents.set(event.id, event);
+  cleanOldEvents();
+}
+
+function cleanOldEvents() {
+  const now = Date.now();
+
+  // Remove old events
+  for (const [id, event] of recentEvents) {
+    if (now - event.timestamp > EVENT_TTL) {
+      recentEvents.delete(id);
+    }
+  }
+
+  // If still too many events, remove oldest ones
+  if (recentEvents.size > MAX_EVENTS) {
+    const sortedEvents = Array.from(recentEvents.entries())
+      .sort(([, a], [, b]) => a.timestamp - b.timestamp);
+    
+    for (let i = 0; i < sortedEvents.length - MAX_EVENTS; i++) {
+      recentEvents.delete(sortedEvents[i][0]);
+    }
+  }
+}
+
+export function getRecentEvents(since: number): EventMessage[] {
+  return Array.from(recentEvents.values())
+    .filter(event => event.timestamp > since)
+    .sort((a, b) => a.timestamp - b.timestamp);
+}
+
+// Periodic maintenance
+setInterval(() => {
+  const now = Date.now();
+  
+  // Check client health and cleanup inactive ones
+  for (const [clientId, client] of clients) {
+    if (now - client.lastActiveAt > 60000) { // 1 minute inactive
+      sendEventToClient(clientId, { type: 'ping' });
+    }
+  }
+  
+  // Clean old events
+  cleanOldEvents();
+}, 30000); // Run every 30 seconds
