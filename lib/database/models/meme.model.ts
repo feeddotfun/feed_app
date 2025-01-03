@@ -36,6 +36,11 @@ const MemeSchema =  createSchema<IMeme>({
         type: Schema.Types.ObjectId,
         ref: 'MemeArenaSession',
         required: true,
+    },
+    isFromNews: {
+        type: Boolean,
+        require: false,
+        default: false
     }
 }, { 
     timestamps: true

@@ -59,3 +59,5 @@ export const SETTINGS_CONFIG = {
     }))
   }
 } as const;
+
+export const VOTING_PERIOD = 24 * 60 * 60 * 1000; // 24 hours in milliseconds

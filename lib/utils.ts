@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { IMeme, IMemeArenaSession, IMemeContribution } from "./database/types";
-import { MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
+import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./database/types";
+import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -46,6 +46,7 @@ export function transformMeme(meme: IMeme): MemeData {
     session: meme.session.toString(),
     memeProgramId: meme.memeProgramId,
     tokenMintAddress: meme.tokenMintAddress,
+    isFromNews: meme.isFromNews,
   };
 }
 
@@ -78,3 +79,20 @@ export function transformContribution(contribution: IMemeContribution): MemeCont
     amount: contribution.amount,
   };
 }
+
+export const transformNewsItem = (item: IMemeNews): AINewsLabItem => {
+  return {
+    id: item._id.toString(),
+    news: item.news,
+    meme: item.meme,
+    ticker: item.ticker,
+    name: item.name,
+    image: item.image,
+    timestamp: item.createdAt.toISOString(),
+    createdAt: item.createdAt.toISOString()
+  };
+};
+
+export const transformNewsItems = (items: IMemeNews[]): AINewsLabItem[] => {
+  return items.map(transformNewsItem);
+};

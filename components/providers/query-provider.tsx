@@ -3,46 +3,64 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
-import { handleSSEEvent } from '@/lib/sse/handlers';
+import { handleAINewsLabEvents } from '@/lib/query/ai-news-lab/events';
+import { handleCommunitySettingEvents } from '@/lib/query/community-setting/events';
 
 export default function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [isSSEActive, setIsSSEActive] = useState(false);
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: isSSEActive ? Infinity : 5000,
-            refetchInterval: isSSEActive ? false : 5000,
-            retry: 1,
-            retryDelay: 1000,
+            staleTime: 5 * 1000, // 5 seconds
+            retry: 3,
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             refetchOnWindowFocus: false,
-            gcTime: 5 * 60 * 1000,
           },
         },
-      })
-  );
+      }), 
+  )
 
+  // SSE Connection Setup
   useEffect(() => {
-    const eventSource = new EventSource('/api/sse');
+    let eventSource: EventSource;
 
-    eventSource.onopen = () => {
-      setIsSSEActive(true);
+    const connectSSE = () => {
+      eventSource = new EventSource('/api/sse');
+
+      eventSource.onopen = () => {
+        console.log('SSE connection established');
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const eventData = event.data;
+          console.log('SSE message received:', event.data);
+          //if (eventData.trim() === '') return;
+
+          handleAINewsLabEvents(event, queryClient);
+          handleCommunitySettingEvents(event, queryClient);
+          
+        } catch (error) {
+          console.error('Error handling SSE message:', error);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('SSE Error:', error);
+        eventSource.close();
+        // Try to reconnect after 5 seconds
+        setTimeout(connectSSE, 5000);
+      };
     };
 
-    eventSource.onmessage = (event) => {
-      handleSSEEvent(queryClient, event);
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('SSE Error:', error);
-      setIsSSEActive(false);
-      eventSource.close();
-    };
+    connectSSE();
 
     return () => {
-      eventSource.close();
-      setIsSSEActive(false);
+      if (eventSource) {
+        console.log('Closing SSE connection');
+        eventSource.close();
+      }
     };
   }, [queryClient]);
 

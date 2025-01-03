@@ -5,29 +5,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SolIcon from '@/components/ui/solana-icon';
-import { useCommunitySetting } from '@/hooks/use-community-setting';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
-import { CommunitySettingData } from '@/types';
 import { CommunitySettingKeyType, CommunitySettingOption } from '@/types';
 import { SETTINGS_CONFIG } from '@/constants/community-setting-config';
 import { SettingCard } from './setting-card';
 import { VotingProgress } from './voting-progress';
+import { useCommunitySetting } from '@/lib/query/community-setting/hooks';
 
-interface CommunitySettingProps {
-  initialData: CommunitySettingData;
-}
 
-const CommunitySetting: React.FC<CommunitySettingProps> = ({ initialData }) => {
+const CommunitySetting: React.FC = () => {
   const { publicKey } = useWallet();
   const { 
-    currentConfig, 
+    votingStartTime,
+    votingEndTime,
     isLoading, 
     vote, 
     isVoting,
     getVotesForSetting,
     getCurrentValue
-  } = useCommunitySetting({ initialData });
+  } = useCommunitySetting();
+
 
   const handleVote = async (settingKey: string, selectedValue: number) => {
     if (!publicKey) {
@@ -41,7 +39,6 @@ const CommunitySetting: React.FC<CommunitySettingProps> = ({ initialData }) => {
         settingKey,
         selectedValue
       });
-      toast.success('Vote submitted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit vote');
     }
@@ -77,8 +74,8 @@ const CommunitySetting: React.FC<CommunitySettingProps> = ({ initialData }) => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">Community Setting</h1>
         <VotingProgress 
-          endTime={initialData.votingEndTime}
-          startTime={initialData.votingStartTime}
+          endTime={votingEndTime!}
+          startTime={votingStartTime!}
         />
       </div>
 

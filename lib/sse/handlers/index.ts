@@ -1,3 +1,4 @@
+import { MemeArenaData, NewsLabItem } from '@/types';
 import { QueryClient } from '@tanstack/react-query';
 
 // Base handler type
@@ -31,8 +32,56 @@ const communitySettingsHandlers: Record<string, EventHandler> = {
   }
 };
 
+// News Lab Handlers
+const newsLabHandlers: Record<string, EventHandler> = {
+  'news-to-arena': (queryClient, data) => {
+    console.log('Received news-to-arena event:', data);
+    // First update the news lab query data
+    queryClient.setQueryData(['ai-news-lab'], (oldData: any) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        items: oldData.items.map((item: NewsLabItem) => 
+          item.id === data.newsId 
+            ? { ...item, isConverted: true }
+            : item
+        )
+      };
+    });
+
+    // Then update the meme arena data
+    queryClient.setQueryData(['meme-arena'], (old: MemeArenaData | undefined) => {
+      if (!old) return old;
+      return {
+        ...old,
+        memes: data.meme 
+          ? [...old.memes.filter(m => m.id !== data.meme.id), data.meme]
+          : old.memes
+      };
+    });
+  }
+};
+
 // Meme Handlers
 const memeHandlers: Record<string, EventHandler> = {
+  'new-meme': (queryClient, data) => {
+      queryClient.setQueryData(['meme-arena'], (old: MemeArenaData | undefined) => {
+        if (!old || !data.meme) return old;
+        const existingMemeIndex = old.memes.findIndex(m => m.id === data.meme.id);
+        const updatedMemes = existingMemeIndex >= 0
+          ? [
+              ...old.memes.slice(0, existingMemeIndex),
+              data.meme,
+              ...old.memes.slice(existingMemeIndex + 1)
+            ]
+          : [...old.memes, data.meme];
+        
+        return {
+          ...old,
+          memes: updatedMemes,
+        };
+      });
+    },
     'meme-created': (queryClient, data) => {
       queryClient.setQueryData(['memes'], (oldData: any) => {
         if (!oldData) return [data.meme];
@@ -53,6 +102,7 @@ const memeHandlers: Record<string, EventHandler> = {
 const handlers: Record<string, EventHandler> = {
     ...communitySettingsHandlers,
     ...memeHandlers,
+    ...newsLabHandlers,
 };
 
 // Main event handler

@@ -38,6 +38,7 @@ export interface IMeme extends Document {
     session: Schema.Types.ObjectId;
     memeProgramId: string;
     tokenMintAddress: string;
+    isFromNews: boolean
 }
 
 export interface IMemeArenaSession extends Document {
@@ -72,6 +73,11 @@ export interface IMemeNews extends Document {
     meme: string;
     name: string;
     ticker: string;
+    image: string;
+    isConverted: boolean;
+    isHidden: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ISystemConfigVotes {

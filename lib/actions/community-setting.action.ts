@@ -13,8 +13,7 @@ import { sendUpdate } from "./sse";
 
 
 // ** Constants
-const VOTING_PERIOD = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-import { SETTINGS_CONFIG } from "@/constants/community-setting-config";
+import { VOTING_PERIOD, SETTINGS_CONFIG } from "@/constants/community-setting-config";
 
 // Get current system config and votes
 export async function getSystemConfigAndVotes() {
@@ -133,15 +132,6 @@ export async function submitVote(data: {
     await dbSession.commitTransaction();
 
 
-    sendUpdate({
-      type: 'vote-update',
-      settingKey: sanitized.settingKey,
-      votes: await SystemConfigVotes.find({
-        settingKey: sanitized.settingKey,
-        lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
-      })
-    });
-
     // Get all votes for this setting to calculate if this is now the winning option
     const allVotes = await SystemConfigVotes.find({
       settingKey: sanitized.settingKey,
@@ -164,7 +154,7 @@ export async function submitVote(data: {
         type: 'config-update',
         setting: sanitized.settingKey,
         value: sanitized.selectedValue
-      });
+      })
     }
 
     return { success: true };

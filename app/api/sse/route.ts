@@ -1,18 +1,30 @@
 import { NextRequest } from 'next/server';
-import { addClient, removeClient, sendUpdate } from '@/lib/actions/sse';
+import SSEManager from '@/lib/sse/sse-manager';
 
 export async function GET(request: NextRequest) {
+  const sseManager = SSEManager.getInstance();
+
   const stream = new ReadableStream({
     start(controller) {
-      const clientId = addClient(controller);
+      const clientId = sseManager.addClient(controller);
 
+      // Send initial connection message
+      const encoder = new TextEncoder();
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`));
+
+      // Keep-alive interval
       const keepAlive = setInterval(() => {
-        sendUpdate({ type: 'keep-alive' });
+        try {
+          controller.enqueue(encoder.encode(': keepalive\n\n'));
+        } catch (error) {
+          console.error('Keep-alive error:', error);
+          clearInterval(keepAlive);
+        }
       }, 15000);
 
       request.signal.addEventListener('abort', () => {
         clearInterval(keepAlive);
-        removeClient(clientId);
+        sseManager.removeClient(clientId);
         controller.close();
       });
     }
@@ -25,4 +37,10 @@ export async function GET(request: NextRequest) {
       'Connection': 'keep-alive',
     },
   });
+}
+
+// Export utility function for other routes to use
+export function sendUpdate(data: unknown) {
+  const sseManager = SSEManager.getInstance();
+  sseManager.broadcast(data);
 }

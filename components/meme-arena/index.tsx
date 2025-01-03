@@ -48,18 +48,31 @@ const MemeArena = () => {
             </Alert>
         );
     }
+
+    if (isLoading) {
+        return (
+          <div className="py-4 space-y-6">
+            <div className="max-w-6xl mx-auto">
+              <h1 className="text-2xl font-bold mb-4">Meme Arena</h1>
+              <div className="flex justify-between items-center mb-4">
+                <MemeCardSkeleton />
+                <MemeCardSkeleton />
+              </div>
+      
+              <Separator className="shadow mb-6"/>
+              
+              <MemeGridSkeleton />
+            </div>
+          </div>
+        );
+      }
     
     return (
         <div className="py-4 space-y-6">
             <div className="max-w-6xl mx-auto">
                 <h1 className="text-2xl font-bold mb-4">Meme Arena</h1>
                 <div className="flex justify-between items-center mb-4">
-                    {isLoading ? (
-                        <>
-                            <MemeCardSkeleton />
-                            <MemeCardSkeleton />
-                        </>
-                    ) : data ? (
+                    {data ? (
                     <>
                         <Badge variant="secondary" className="text-sm py-1 px-2">
                             {formatPhaseString(data.session.status)}

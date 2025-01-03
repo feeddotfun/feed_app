@@ -7,6 +7,7 @@ import { SolanaWalletProvider } from '@/components/providers/solana-wallet-provi
 import '../styles/globals.css';
 import '../styles/solana-wallet.css';
 import QueryProvider from '@/components/providers/query-provider';
+import { Toaster } from 'sonner';
 
 const jetBrainsMono = JetBrains_Mono({ 
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default async function RootLayout({
         className={`${jetBrainsMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
+        <Toaster richColors={true} position='top-right'/>
         <NextTopLoader showSpinner={false} color='#99FF19' />
         <QueryProvider>
             <SolanaWalletProvider>

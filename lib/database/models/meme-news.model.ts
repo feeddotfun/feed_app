@@ -18,6 +18,19 @@ const MemeNewsSchema = createSchema<IMemeNews>({
         type: String,
         required: true,
     },
+    image: {
+        type: String,
+        require: true,
+    },
+    isConverted: {
+        type: Boolean,
+        require: false,
+        default: false
+    },
+    isHidden: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 })

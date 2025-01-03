@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { Client } from '@upstash/qstash';
 
 export class MemeArenaTimerService {

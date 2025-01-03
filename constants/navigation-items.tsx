@@ -11,7 +11,13 @@ export const navigationItems: NavItem[] = [
     title: 'Meme Arena',
     href: '/meme-arena',
     icon: 'zap',
-    label: 'user'
+    label: 'Meme Arena'
+  },
+  {
+    title: 'AI News Lab',
+    href: '/ai-news-lab',
+    icon: 'news',
+    label: 'AI News Lab'
   },
   {
     title: 'Winning Memes',
