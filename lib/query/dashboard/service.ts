@@ -1,26 +1,15 @@
 import { BaseService } from '../core/base-service';
-import { DashboardData } from '@/types';
+import { BaseResponse, DashboardStats } from '@/types';
 
-export class DashboardService extends BaseService<DashboardData> {
-  constructor(endpoint: string) {
-    super(endpoint);
+export class DashboardService extends BaseService<DashboardStats> {
+  constructor() {
+    super('/api/dashboard');
   }
 
-  async getMetrics(): Promise<DashboardData['metrics']> {
-    const response = await fetch(`${this.baseURL}/metrics`);
-    if (!response.ok) throw new Error('Failed to fetch metrics');
-    return response.json();
-  }
-
-  async getChartData(chartId: string): Promise<DashboardData['charts']> {
-    const response = await fetch(`${this.baseURL}/charts/${chartId}`);
-    if (!response.ok) throw new Error('Failed to fetch chart data');
-    return response.json();
-  }
-
-  async getListData(listId: string): Promise<DashboardData['lists']> {
-    const response = await fetch(`${this.baseURL}/lists/${listId}`);
-    if (!response.ok) throw new Error('Failed to fetch list data');
-    return response.json();
+  async getAll(): Promise<BaseResponse<DashboardStats>> {
+    const response = await fetch(`${this.baseURL}`);
+    if (!response.ok) throw new Error(`Failed to fetch ${this.baseURL}`);
+    const data = await response.json();
+    return data;
   }
 }

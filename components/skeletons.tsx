@@ -170,3 +170,137 @@ export const AINewsLabSkeleton = () => {
     </div>
   );
 };
+
+export const DashboardSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      {/* Dashboard Stats Cards */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="bg-card/50 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[100px] bg-muted/60" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full bg-muted/60" />
+                  <Skeleton className="h-7 w-[120px] bg-muted/60" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Session Stats Skeleton */}
+      <Card className="bg-card/50 backdrop-blur-sm mt-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-24 bg-muted/60" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full bg-muted/60" />
+                  <Skeleton className="h-6 w-20 bg-muted/60" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Chart Skeleton */}
+      <Card className="bg-card/50 backdrop-blur-sm">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-5 w-24 bg-muted/60" />
+        </CardHeader>
+        <CardContent>
+          <div className="h-[160px] w-full">
+            <div className="h-full w-full bg-muted/60 rounded-lg animate-pulse" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Trending Memes Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Winners Section */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Skeleton className="w-5 h-5 rounded-full bg-[#99FF19]/20" />
+            <Skeleton className="h-6 w-40 bg-muted/60" />
+          </div>
+          <div className="space-y-3">
+            {[...Array(2)].map((_, i) => (
+              <Card key={i} className="bg-card/50 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Image Skeleton */}
+                    <div className="relative w-full sm:w-28 aspect-square rounded-md bg-muted/60 animate-pulse" />
+                    
+                    {/* Content Skeleton */}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <Skeleton className="h-5 w-32 bg-muted/60" />
+                        <Skeleton className="h-6 w-20 rounded-full bg-muted/60" />
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <Skeleton className="h-4 w-4 bg-muted/60" />
+                          <Skeleton className="h-4 w-16 bg-muted/60" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Skeleton className="h-4 w-24 bg-muted/60" />
+                          <Skeleton className="h-4 w-16 bg-muted/60" />
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-border/50">
+                        <Skeleton className="h-8 w-full bg-muted/60" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Voted Section */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Skeleton className="w-5 h-5 rounded-full bg-[#99FF19]/20" />
+            <Skeleton className="h-6 w-40 bg-muted/60" />
+          </div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="bg-card/50 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Image Skeleton */}
+                    <div className="relative w-full sm:w-28 aspect-square rounded-md bg-muted/60 animate-pulse" />
+                    
+                    {/* Content Skeleton */}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <Skeleton className="h-5 w-32 bg-muted/60" />
+                        <Skeleton className="h-6 w-20 rounded-full bg-muted/60" />
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <Skeleton className="h-4 w-4 bg-muted/60" />
+                          <Skeleton className="h-4 w-16 bg-muted/60" />
+                        </div>
+                        <Skeleton className="h-4 w-32 bg-muted/60" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

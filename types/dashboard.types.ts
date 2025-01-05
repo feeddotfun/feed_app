@@ -1,37 +1,32 @@
-import { BaseEntity } from "./base.types";
+export interface DashboardMemeData {
+  id: string;
+  name: string;
+  image: string;
+  ticker: string;
+  votes: number;
+  marketCap?: number;
+  date?: string;
+  mintAddress?: string;
+}
 
-export interface DashboardMetric {
-    id: string;
-    title: string;
-    value: number | string;
-    change?: number;
-    prefix?: string;
-    suffix?: string;
-  }
-  
-  export interface DashboardChart {
-    id: string;
-    title: string;
-    data: any[];
-    type: 'line' | 'bar' | 'area';
-    xKey: string;
-    yKey: string;
-  }
-  
-  export interface DashboardList {
-    id: string;
-    title: string;
-    items: Array<{
-      id: string;
-      title: string;
-      subtitle?: string;
-      value?: number | string;
-      image?: string;
-    }>;
-  }
-  
-  export interface DashboardData extends BaseEntity {
-    metrics: DashboardMetric[];
-    charts: DashboardChart[];
-    lists: DashboardList[];
-  }
+export interface TrendingMemes {
+  winners: DashboardMemeData[];
+  topVoted: DashboardMemeData[];
+}
+
+export interface DashboardStats {
+  id: string;
+  totalMemes: number;
+  totalVotes: number;
+  totalWinners: number;
+  activeSessions: number;
+  activity: Array<{
+    time: string;
+    activity: number;
+    baseline: number;
+  }>;
+  trendingMeme: DashboardMemeData | null;
+  trendingMemes: TrendingMemes;
+  lastUpdated: string;
+  createdAt: string;
+}
