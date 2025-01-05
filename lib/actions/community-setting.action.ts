@@ -13,7 +13,18 @@ import { sendUpdate } from "./sse";
 
 
 // ** Constants
-import { VOTING_PERIOD, SETTINGS_CONFIG } from "@/constants/community-setting-config";
+import { VOTING_PERIOD, SETTINGS_CONFIG } from "@/constants/community-setting.config";
+
+export async function getSystemConfig() {
+  await connectToDatabase();
+  
+  const config = await SystemConfig.getConfig();
+  
+  return {
+    maxContributionSol: config.maxContributionSol,
+    minContributionSol: config.minContributionSol
+  };
+}
 
 // Get current system config and votes
 export async function getSystemConfigAndVotes() {

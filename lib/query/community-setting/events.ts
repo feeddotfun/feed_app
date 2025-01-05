@@ -5,9 +5,8 @@ import { CommunitySettingData } from '@/types';
 
 const queryKeys = new QueryKeys('communitySetting');
 
-export const handleCommunitySettingEvents = (event: MessageEvent, queryClient: QueryClient) => {
+export const handleCommunitySettingEvents = (data: any, queryClient: QueryClient) => {
   try {     
-    const data = JSON.parse(event.data);    
 
     switch (data.type) {
       case 'vote-update':

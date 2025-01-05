@@ -1,6 +1,6 @@
 import { sendUpdate } from "@/app/api/sse/route";
 import { getActiveSessionMemes } from "@/lib/actions/meme-arena.action";
-import { convertTest, createMemeFromNews } from "@/lib/actions/meme-news.action";
+import { createMemeFromNews } from "@/lib/actions/meme-news.action";
 import { NextRequest } from "next/server";
 
 export async function POST(
@@ -16,23 +16,20 @@ export async function POST(
         headers: { 'Content-Type': 'application/json' }
       });
     }
+    
+    const sessionData = await getActiveSessionMemes();
+          if (sessionData.memes.length >= sessionData.session.maxMemes) {
+        return new Response(JSON.stringify({ 
+          error: 'Meme Arena is full for current session' 
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    
+      const meme = await createMemeFromNews(sessionData.session.id, id);
 
-    //!! ADD THIS
-    //const sessionData = await getActiveSessionMemes();
-    //       if (sessionData.memes.length >= sessionData.session.maxMemes) {
-//         return new Response(JSON.stringify({ 
-//           error: 'Meme Arena is full for current session' 
-//         }), {
-//           status: 400,
-//           headers: { 'Content-Type': 'application/json' }
-//         });
-//       }
-//       const meme = await createMemeFromNews(sessionData.session.id, id);
-
-    const meme = await convertTest(id);
-
-    sendUpdate({
-      type: 'news-converted',
+    sendUpdate('news-converted',{
       data: {
         newsId: id,
         meme: meme,       

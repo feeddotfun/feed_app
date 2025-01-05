@@ -1,11 +1,11 @@
-import React from 'react'
-import Image from 'next/image'
-import { motion } from 'framer-motion'
-import { Clock, ThumbsUp, Users } from 'lucide-react'
-import { Badge } from "@/components/ui/badge"
-import { MemeData, MemeArenaSessionData } from "@/types"
-import { convertLamportsToSol, formatTime } from "@/lib/utils"
-import { ContributorsPopup } from './contributors-popup'
+import React from 'react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { Clock, ThumbsUp, Users } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { MemeData, MemeArenaSessionData } from "@/types";
+import { convertLamportsToSol, formatTime } from "@/lib/utils";
+import { ContributorsPopup } from './contributors-popup';
 
 interface MemeDetailsProps {
   meme: MemeData;
@@ -13,13 +13,18 @@ interface MemeDetailsProps {
   session: MemeArenaSessionData;
 }
 
-export const MemeDetails: React.FC<MemeDetailsProps> = ({ meme, remainingTime, session }) => {
+export const MemeDetails: React.FC<MemeDetailsProps> = ({
+  meme,
+  remainingTime,
+  session
+}) => {
   const [isPopupOpen, setIsPopupOpen] = React.useState(false);
-  
+
   const handlePopupOpen = () => {
-    if (session.totalContributions > 0)
-      setIsPopupOpen(true)
-  }
+    if (session.totalContributions > 0) {
+      setIsPopupOpen(true);
+    }
+  };
 
   return (
     <>
@@ -32,6 +37,7 @@ export const MemeDetails: React.FC<MemeDetailsProps> = ({ meme, remainingTime, s
         <h2 className="text-xl sm:text-2xl font-bold mb-2">{meme.name}</h2>
         <p className="text-lg sm:text-xl font-semibold text-primary">{meme.ticker}</p>
       </motion.div>
+
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -41,33 +47,40 @@ export const MemeDetails: React.FC<MemeDetailsProps> = ({ meme, remainingTime, s
         <Image
           src={meme.image}
           alt={meme.name}
-          layout="fill"
-          objectFit="cover"
+          fill
+          className="object-contain"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
         />
       </motion.div>
+
       <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
         <Badge variant="secondary" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-lg font-bold">
-          <ThumbsUp className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" /> {meme.totalVotes} Votes
+          <ThumbsUp className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          {meme.totalVotes} Votes
         </Badge>
-        <Badge 
-          variant="secondary" 
+
+        <Badge
+          variant="secondary"
           className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-lg font-bold cursor-pointer hover:bg-secondary/80"
-          onClick={() => handlePopupOpen}
-        >      
-          <Users className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" /> 
-          {convertLamportsToSol(session.totalContributions) ?? 0} Contributors
+          onClick={handlePopupOpen}
+        >
+          <Users className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          {session.contributorCount || 0} ({convertLamportsToSol(session.totalContributions || 0)} SOL)
         </Badge>
+
         {remainingTime !== null && session.status === 'Contributing' && (
           <Badge variant="secondary" className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-lg font-bold">
-            <Clock className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" /> {formatTime(remainingTime)}
+            <Clock className="mr-2 w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            {formatTime(remainingTime)}
           </Badge>
         )}
       </div>
+
       <ContributorsPopup
         isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
+        onClose={() => setIsPopupOpen(false)}  sessionId={session.id} 
       />
     </>
-)
-}
+  );
+};

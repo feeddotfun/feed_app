@@ -1,0 +1,1884 @@
+{
+    "address": "AsBScVvhTKxqFfe6oM1bxkWdaJE1TTGoJZhL2fGUGKWV",
+    "metadata": {
+      "name": "meme_fund",
+      "version": "0.1.0",
+      "spec": "0.1.0",
+      "description": "Created with Anchor"
+    },
+    "instructions": [
+      {
+        "name": "admin_claim_rewards",
+        "discriminator": [
+          228,
+          5,
+          104,
+          85,
+          191,
+          26,
+          71,
+          253
+        ],
+        "accounts": [
+          {
+            "name": "registry",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    114,
+                    101,
+                    103,
+                    105,
+                    115,
+                    116,
+                    114,
+                    121
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "state",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "vault",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    118,
+                    97,
+                    117,
+                    108,
+                    116
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "fee_recipient",
+            "writable": true
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          }
+        ],
+        "args": [
+          {
+            "name": "meme_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "claim_tokens",
+        "discriminator": [
+          108,
+          216,
+          210,
+          231,
+          0,
+          212,
+          42,
+          64
+        ],
+        "accounts": [
+          {
+            "name": "registry",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    114,
+                    101,
+                    103,
+                    105,
+                    115,
+                    116,
+                    114,
+                    121
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "contribution",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    99,
+                    111,
+                    110,
+                    116,
+                    114,
+                    105,
+                    98,
+                    117,
+                    116,
+                    105,
+                    111,
+                    110
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                },
+                {
+                  "kind": "account",
+                  "path": "contributor"
+                }
+              ]
+            }
+          },
+          {
+            "name": "contributor",
+            "writable": true,
+            "signer": true,
+            "relations": [
+              "contribution"
+            ]
+          },
+          {
+            "name": "vault",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    118,
+                    97,
+                    117,
+                    108,
+                    116
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "vault_token_account",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "account",
+                  "path": "vault"
+                },
+                {
+                  "kind": "const",
+                  "value": [
+                    6,
+                    221,
+                    246,
+                    225,
+                    215,
+                    101,
+                    161,
+                    147,
+                    217,
+                    203,
+                    225,
+                    70,
+                    206,
+                    235,
+                    121,
+                    172,
+                    28,
+                    180,
+                    133,
+                    237,
+                    95,
+                    91,
+                    55,
+                    145,
+                    58,
+                    140,
+                    245,
+                    133,
+                    126,
+                    255,
+                    0,
+                    169
+                  ]
+                },
+                {
+                  "kind": "account",
+                  "path": "mint"
+                }
+              ],
+              "program": {
+                "kind": "const",
+                "value": [
+                  140,
+                  151,
+                  37,
+                  143,
+                  78,
+                  36,
+                  137,
+                  241,
+                  187,
+                  61,
+                  16,
+                  41,
+                  20,
+                  142,
+                  13,
+                  131,
+                  11,
+                  90,
+                  19,
+                  153,
+                  218,
+                  255,
+                  16,
+                  132,
+                  4,
+                  142,
+                  123,
+                  216,
+                  219,
+                  233,
+                  248,
+                  89
+                ]
+              }
+            }
+          },
+          {
+            "name": "user_token_account",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "account",
+                  "path": "contributor"
+                },
+                {
+                  "kind": "const",
+                  "value": [
+                    6,
+                    221,
+                    246,
+                    225,
+                    215,
+                    101,
+                    161,
+                    147,
+                    217,
+                    203,
+                    225,
+                    70,
+                    206,
+                    235,
+                    121,
+                    172,
+                    28,
+                    180,
+                    133,
+                    237,
+                    95,
+                    91,
+                    55,
+                    145,
+                    58,
+                    140,
+                    245,
+                    133,
+                    126,
+                    255,
+                    0,
+                    169
+                  ]
+                },
+                {
+                  "kind": "account",
+                  "path": "mint"
+                }
+              ],
+              "program": {
+                "kind": "const",
+                "value": [
+                  140,
+                  151,
+                  37,
+                  143,
+                  78,
+                  36,
+                  137,
+                  241,
+                  187,
+                  61,
+                  16,
+                  41,
+                  20,
+                  142,
+                  13,
+                  131,
+                  11,
+                  90,
+                  19,
+                  153,
+                  218,
+                  255,
+                  16,
+                  132,
+                  4,
+                  142,
+                  123,
+                  216,
+                  219,
+                  233,
+                  248,
+                  89
+                ]
+              }
+            }
+          },
+          {
+            "name": "mint"
+          },
+          {
+            "name": "state",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "token_program",
+            "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          },
+          {
+            "name": "associated_token_program",
+            "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          }
+        ],
+        "args": [
+          {
+            "name": "_meme_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "contribute",
+        "discriminator": [
+          82,
+          33,
+          68,
+          131,
+          32,
+          0,
+          205,
+          95
+        ],
+        "accounts": [
+          {
+            "name": "vault",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    118,
+                    97,
+                    117,
+                    108,
+                    116
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "registry",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    114,
+                    101,
+                    103,
+                    105,
+                    115,
+                    116,
+                    114,
+                    121
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "contribution",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    99,
+                    111,
+                    110,
+                    116,
+                    114,
+                    105,
+                    98,
+                    117,
+                    116,
+                    105,
+                    111,
+                    110
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                },
+                {
+                  "kind": "account",
+                  "path": "contributor"
+                }
+              ]
+            }
+          },
+          {
+            "name": "contributor",
+            "writable": true,
+            "signer": true
+          },
+          {
+            "name": "state",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "fee_recipient",
+            "writable": true
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          }
+        ],
+        "args": [
+          {
+            "name": "meme_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "create_meme_registry",
+        "discriminator": [
+          185,
+          241,
+          171,
+          168,
+          108,
+          84,
+          46,
+          60
+        ],
+        "accounts": [
+          {
+            "name": "registry",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    114,
+                    101,
+                    103,
+                    105,
+                    115,
+                    116,
+                    114,
+                    121
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "vault",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    118,
+                    97,
+                    117,
+                    108,
+                    116
+                  ]
+                },
+                {
+                  "kind": "arg",
+                  "path": "meme_id"
+                }
+              ]
+            }
+          },
+          {
+            "name": "state",
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "writable": true,
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          }
+        ],
+        "args": [
+          {
+            "name": "meme_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "initialize",
+        "discriminator": [
+          175,
+          175,
+          109,
+          31,
+          13,
+          152,
+          155,
+          237
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "writable": true,
+            "signer": true
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          }
+        ],
+        "args": [
+          {
+            "name": "fee_recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "initial_min_buy_amount",
+            "type": "u64"
+          },
+          {
+            "name": "initial_max_buy_amount",
+            "type": "u64"
+          },
+          {
+            "name": "initial_fund_duration",
+            "type": "i64"
+          },
+          {
+            "name": "initial_max_fund_limit",
+            "type": "u64"
+          },
+          {
+            "name": "initial_commission_rate",
+            "type": "u8"
+          },
+          {
+            "name": "initial_token_claim_available_time",
+            "type": "i64"
+          }
+        ]
+      },
+      {
+        "name": "start_meme",
+        "discriminator": [
+          84,
+          25,
+          29,
+          95,
+          8,
+          105,
+          128,
+          95
+        ],
+        "accounts": [
+          {
+            "name": "registry",
+            "writable": true
+          },
+          {
+            "name": "vault",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    118,
+                    97,
+                    117,
+                    108,
+                    116
+                  ]
+                },
+                {
+                  "kind": "account",
+                  "path": "registry.meme_id",
+                  "account": "MemeRegistry"
+                }
+              ]
+            }
+          },
+          {
+            "name": "mint",
+            "writable": true,
+            "signer": true
+          },
+          {
+            "name": "mint_authority",
+            "writable": true
+          },
+          {
+            "name": "bonding_curve",
+            "writable": true
+          },
+          {
+            "name": "associated_bonding_curve",
+            "writable": true
+          },
+          {
+            "name": "global"
+          },
+          {
+            "name": "mpl_token_metadata"
+          },
+          {
+            "name": "metadata",
+            "writable": true
+          },
+          {
+            "name": "authority",
+            "writable": true,
+            "signer": true
+          },
+          {
+            "name": "system_program",
+            "address": "11111111111111111111111111111111"
+          },
+          {
+            "name": "token_program",
+            "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          },
+          {
+            "name": "associated_token_program"
+          },
+          {
+            "name": "rent",
+            "address": "SysvarRent111111111111111111111111111111111"
+          },
+          {
+            "name": "event_authority"
+          },
+          {
+            "name": "pump_program"
+          },
+          {
+            "name": "fee_recipient",
+            "writable": true
+          },
+          {
+            "name": "associated_user",
+            "writable": true
+          }
+        ],
+        "args": [
+          {
+            "name": "meme_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "buy_amount",
+            "type": "u64"
+          },
+          {
+            "name": "max_sol_cost",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "update_commission_rate",
+        "discriminator": [
+          236,
+          246,
+          147,
+          40,
+          231,
+          17,
+          77,
+          173
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_rate",
+            "type": "u8"
+          }
+        ]
+      },
+      {
+        "name": "update_fee_recipient",
+        "discriminator": [
+          249,
+          0,
+          198,
+          35,
+          183,
+          123,
+          57,
+          188
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_fee_recipient",
+            "type": "pubkey"
+          }
+        ]
+      },
+      {
+        "name": "update_fund_duration",
+        "discriminator": [
+          105,
+          187,
+          244,
+          29,
+          245,
+          138,
+          116,
+          13
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_fund_duration",
+            "type": "i64"
+          }
+        ]
+      },
+      {
+        "name": "update_max_buy_amount",
+        "discriminator": [
+          63,
+          211,
+          236,
+          169,
+          5,
+          81,
+          223,
+          216
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_max_buy_amount",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "update_max_claim_available_time",
+        "discriminator": [
+          59,
+          91,
+          32,
+          253,
+          97,
+          211,
+          139,
+          64
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_claim_available_time",
+            "type": "i64"
+          }
+        ]
+      },
+      {
+        "name": "update_max_fund_limit",
+        "discriminator": [
+          119,
+          45,
+          250,
+          146,
+          87,
+          90,
+          104,
+          61
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_max_fund_limit",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "update_min_buy_amount",
+        "discriminator": [
+          69,
+          199,
+          123,
+          153,
+          108,
+          225,
+          210,
+          46
+        ],
+        "accounts": [
+          {
+            "name": "state",
+            "writable": true,
+            "pda": {
+              "seeds": [
+                {
+                  "kind": "const",
+                  "value": [
+                    115,
+                    116,
+                    97,
+                    116,
+                    101
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "signer": true,
+            "relations": [
+              "state"
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "new_min_buy_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "Contribution",
+        "discriminator": [
+          182,
+          187,
+          14,
+          111,
+          72,
+          167,
+          242,
+          212
+        ]
+      },
+      {
+        "name": "MemeRegistry",
+        "discriminator": [
+          105,
+          119,
+          68,
+          180,
+          221,
+          182,
+          24,
+          249
+        ]
+      },
+      {
+        "name": "State",
+        "discriminator": [
+          216,
+          146,
+          107,
+          94,
+          104,
+          75,
+          182,
+          177
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "CommissionRateUpdated",
+        "discriminator": [
+          49,
+          221,
+          197,
+          86,
+          50,
+          237,
+          1,
+          177
+        ]
+      },
+      {
+        "name": "ContributionMade",
+        "discriminator": [
+          81,
+          218,
+          72,
+          109,
+          93,
+          96,
+          131,
+          199
+        ]
+      },
+      {
+        "name": "FeeRecipientUpdated",
+        "discriminator": [
+          24,
+          150,
+          233,
+          92,
+          169,
+          221,
+          233,
+          244
+        ]
+      },
+      {
+        "name": "FundDurationUpdated",
+        "discriminator": [
+          17,
+          98,
+          43,
+          21,
+          30,
+          64,
+          60,
+          87
+        ]
+      },
+      {
+        "name": "MaxBuyAmountUpdated",
+        "discriminator": [
+          108,
+          35,
+          104,
+          141,
+          207,
+          47,
+          59,
+          146
+        ]
+      },
+      {
+        "name": "MaxFundLimitUpdated",
+        "discriminator": [
+          62,
+          193,
+          191,
+          152,
+          41,
+          24,
+          207,
+          96
+        ]
+      },
+      {
+        "name": "MemeRegistryCreated",
+        "discriminator": [
+          159,
+          48,
+          194,
+          210,
+          237,
+          118,
+          9,
+          215
+        ]
+      },
+      {
+        "name": "MemeStarted",
+        "discriminator": [
+          39,
+          126,
+          154,
+          44,
+          89,
+          18,
+          228,
+          158
+        ]
+      },
+      {
+        "name": "MinBuyAmountUpdated",
+        "discriminator": [
+          198,
+          4,
+          96,
+          237,
+          9,
+          131,
+          120,
+          180
+        ]
+      },
+      {
+        "name": "TokensClaimed",
+        "discriminator": [
+          25,
+          128,
+          244,
+          55,
+          241,
+          136,
+          200,
+          91
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "code": 6000,
+        "name": "ExceedsMaxAmount",
+        "msg": "Contribution exceeds maximum allowed amount"
+      },
+      {
+        "code": 6001,
+        "name": "ContributorAlreadyExists",
+        "msg": "This contributor has already participated"
+      },
+      {
+        "code": 6002,
+        "name": "FundClosed",
+        "msg": "Fund is closed for contributions"
+      },
+      {
+        "code": 6003,
+        "name": "InvalidMemeId",
+        "msg": "Invalid Meme ID"
+      },
+      {
+        "code": 6004,
+        "name": "ArithmeticOverflow",
+        "msg": "Arithmetic overflow"
+      },
+      {
+        "code": 6005,
+        "name": "Unauthorized",
+        "msg": "Unauthorized"
+      },
+      {
+        "code": 6006,
+        "name": "FundExpired",
+        "msg": "Fund has expired"
+      },
+      {
+        "code": 6007,
+        "name": "FundStillActive",
+        "msg": "Fund is still active"
+      },
+      {
+        "code": 6008,
+        "name": "ExceedsMaxAllowedAmount",
+        "msg": "Exceeds maximum allowed amount of 2 SOL"
+      },
+      {
+        "code": 6009,
+        "name": "CommissionRateTooHigh",
+        "msg": "Commission rate cannot exceed 10%"
+      },
+      {
+        "code": 6010,
+        "name": "InvalidFundDuration",
+        "msg": "Invalid fund duration"
+      },
+      {
+        "code": 6011,
+        "name": "InsufficientBalance",
+        "msg": "Insufficient balance"
+      },
+      {
+        "code": 6012,
+        "name": "SameWalletAddress",
+        "msg": "New wallet address is the same as the old one"
+      },
+      {
+        "code": 6013,
+        "name": "MaxContributorsReached",
+        "msg": "Maximum number of contributors reached"
+      },
+      {
+        "code": 6014,
+        "name": "ExceedsMaxFundLimit",
+        "msg": "Exceeds maximum fund limit"
+      },
+      {
+        "code": 6015,
+        "name": "BelowMinAmount",
+        "msg": "Contribution is below the minimum allowed amount"
+      },
+      {
+        "code": 6016,
+        "name": "BelowMinAllowedAmount",
+        "msg": "New minimum buy amount is below the allowed minimum of 0.1 SOL"
+      },
+      {
+        "code": 6017,
+        "name": "ExceedsMaxBuyAmount",
+        "msg": "New minimum buy amount exceeds the current maximum buy amount"
+      },
+      {
+        "code": 6018,
+        "name": "InvalidBuyAmount",
+        "msg": "Invalid buy amount: minimum exceeds maximum"
+      },
+      {
+        "code": 6019,
+        "name": "SymbolTooLong",
+        "msg": "Symbol must be 10 characters or less"
+      },
+      {
+        "code": 6020,
+        "name": "NameTooLong",
+        "msg": "Name must be 32 characters or less"
+      },
+      {
+        "code": 6021,
+        "name": "InvalidFeeRecipient",
+        "msg": "Invalid fee recipient address"
+      },
+      {
+        "code": 6022,
+        "name": "ATACreationFailed",
+        "msg": "Failed to create Associated Token Account"
+      },
+      {
+        "code": 6023,
+        "name": "AlreadyClaimed",
+        "msg": "Tokens have already been claimed"
+      },
+      {
+        "code": 6024,
+        "name": "ZeroClaimAmount",
+        "msg": "Zero claim amount"
+      },
+      {
+        "code": 6025,
+        "name": "InsufficientVaultBalance",
+        "msg": "Insufficient vault balance"
+      },
+      {
+        "code": 6026,
+        "name": "ZeroContributionAmount",
+        "msg": "Zero contribution amount"
+      },
+      {
+        "code": 6027,
+        "name": "NoFundsInRegistry",
+        "msg": "No funds in registry"
+      },
+      {
+        "code": 6028,
+        "name": "NotAllTokensClaimed",
+        "msg": "Not all tokens have been claimed yet"
+      },
+      {
+        "code": 6029,
+        "name": "NoRewardsToClaim",
+        "msg": "No rewards to claim"
+      },
+      {
+        "code": 6030,
+        "name": "ClaimTimeNotReached",
+        "msg": "Token claim time has not been reached yet"
+      }
+    ],
+    "types": [
+      {
+        "name": "CommissionRateUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_rate",
+              "type": "u8"
+            },
+            {
+              "name": "new_rate",
+              "type": "u8"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Contribution",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "contributor",
+              "type": "pubkey"
+            },
+            {
+              "name": "amount",
+              "type": "u64"
+            },
+            {
+              "name": "timestamp",
+              "type": "i64"
+            },
+            {
+              "name": "is_claimed",
+              "type": "bool"
+            }
+          ]
+        }
+      },
+      {
+        "name": "ContributionMade",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "contributor",
+              "type": "pubkey"
+            },
+            {
+              "name": "amount",
+              "type": "u64"
+            },
+            {
+              "name": "commission_amount",
+              "type": "u64"
+            },
+            {
+              "name": "net_contribution_amount",
+              "type": "u64"
+            },
+            {
+              "name": "timestamp",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "FeeRecipientUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_wallet",
+              "type": "pubkey"
+            },
+            {
+              "name": "new_wallet",
+              "type": "pubkey"
+            }
+          ]
+        }
+      },
+      {
+        "name": "FundDurationUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_duration",
+              "type": "i64"
+            },
+            {
+              "name": "new_duration",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MaxBuyAmountUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_amount",
+              "type": "u64"
+            },
+            {
+              "name": "new_amount",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MaxFundLimitUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_limit",
+              "type": "u64"
+            },
+            {
+              "name": "new_limit",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MemeRegistry",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "total_funds",
+              "type": "u64"
+            },
+            {
+              "name": "start_time",
+              "type": "i64"
+            },
+            {
+              "name": "end_time",
+              "type": "i64"
+            },
+            {
+              "name": "authority",
+              "type": "pubkey"
+            },
+            {
+              "name": "contributor_count",
+              "type": "u64"
+            },
+            {
+              "name": "mint",
+              "type": "pubkey"
+            },
+            {
+              "name": "unclaimed_rewards",
+              "type": "u64"
+            },
+            {
+              "name": "claimed_count",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MemeRegistryCreated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "start_time",
+              "type": "i64"
+            },
+            {
+              "name": "end_time",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MemeStarted",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "mint",
+              "type": "pubkey"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "name": "uri",
+              "type": "string"
+            },
+            {
+              "name": "total_funds",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "MinBuyAmountUpdated",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "old_amount",
+              "type": "u64"
+            },
+            {
+              "name": "new_amount",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "State",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "fee_recipient",
+              "type": "pubkey"
+            },
+            {
+              "name": "max_buy_amount",
+              "type": "u64"
+            },
+            {
+              "name": "min_buy_amount",
+              "type": "u64"
+            },
+            {
+              "name": "authority",
+              "type": "pubkey"
+            },
+            {
+              "name": "fund_duration",
+              "type": "i64"
+            },
+            {
+              "name": "max_fund_limit",
+              "type": "u64"
+            },
+            {
+              "name": "commission_rate",
+              "type": "u8"
+            },
+            {
+              "name": "token_claim_available_time",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "TokensClaimed",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "meme_id",
+              "type": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            },
+            {
+              "name": "contributor",
+              "type": "pubkey"
+            },
+            {
+              "name": "amount",
+              "type": "u64"
+            }
+          ]
+        }
+      }
+    ]
+  }

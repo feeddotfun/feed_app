@@ -10,16 +10,17 @@ import SystemConfig from "../database/models/system-config.model";
 import MemeVote from "../database/models/meme-vote.model";
 
 // ** SSE & Services
-import { sendUpdate } from "./sse";
+import { sendUpdate } from "@/app/api/sse/route";
 import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
 
 // ** Utils
 import { transformMeme, transformSession, transformContribution } from "../utils";
 
 // ** Types
-import { CreateMemeContributionDto, CreateMemeDto, CreateMemeVoteDto, MemeArenaData, MemeData } from "@/types";
+import { ContributeMemeParams, CreateMemeParams, MemeArenaData, MemeData, VoteMemeParams } from "@/types";
 import { IMeme, IMemeArenaSession, IMemeContribution } from "../database/types";
 import MemeContribution from "../database/models/meme-contribution.model";
+import { MemeFundSDK } from "../meme-fund/fund.sdk";
 
 
 // ** Initialize system
@@ -49,8 +50,7 @@ export async function startNewArenaSession() {
       }], { session: dbSession });
   
       await dbSession.commitTransaction();
-      sendUpdate({
-        type: 'new-session',
+      sendUpdate('new-session',{        
         session: transformSession(session[0])
       });
       return session[0];
@@ -63,9 +63,9 @@ export async function startNewArenaSession() {
   }
 
 // ** Create a new meme
-export async function createMeme(createMemeDto: Partial<CreateMemeDto>): Promise<MemeData> {
+export async function createMeme(createMemeParams: Partial<CreateMemeParams>): Promise<MemeData> {
   await connectToDatabase();
-  const sanitized = sanitize(createMemeDto);
+  const sanitized = sanitize(createMemeParams);
   const now = Date.now();
 
   const dbSession = await mongoose.startSession();
@@ -86,7 +86,6 @@ export async function createMeme(createMemeDto: Partial<CreateMemeDto>): Promise
       await dbSession.commitTransaction();
 
       const transformedMeme = transformMeme(newMeme[0]);
-      sendUpdate({ type: 'new-meme', meme: transformedMeme, timestamp: now });
       
       return transformedMeme;
   } catch (error) {
@@ -101,41 +100,50 @@ export async function createMeme(createMemeDto: Partial<CreateMemeDto>): Promise
 export async function getActiveSessionMemes() {
   await connectToDatabase();
 
+  let completedSession = await MemeArenaSession.findOne<IMemeArenaSession>({ 
+    status: 'Completed',
+    nextSessionStartTime: { $gt: new Date() }
+  }).sort('-endTime').lean();
+
+  if (completedSession) {
+    const winnerMeme = await Meme.findById(completedSession.winnerMeme).lean();
+    
+    const transformedData: MemeArenaData = {
+      id: completedSession._id.toString(),
+      createdAt: completedSession.createdAt.toISOString(),
+      session: transformSession(completedSession as IMemeArenaSession),
+      memes: winnerMeme ? [transformMeme(winnerMeme as IMeme)] : []
+    };
+    
+    return transformedData;
+  }
+
   let activeSession = await MemeArenaSession.findOne<IMemeArenaSession>({ 
     status: { $in: ['Voting', 'LastVoting', 'Contributing'] } 
-}).sort('-startTime').lean();
-
-  if (!activeSession) {
-    activeSession = await MemeArenaSession.findOne<IMemeArenaSession>({ 
-      status: 'Completed' 
-    }).sort('-endTime').lean();
-  }
+   }).sort('-startTime').lean();
 
   if (!activeSession) {
     throw new Error('No active session found');
   }
 
-  let memes: IMeme[];
-
-  if (activeSession.status === 'Completed' || activeSession.status === 'Contributing') {
-    const winnerMeme = await Meme.findById(activeSession.winnerMeme).lean();
-    memes = winnerMeme ? [winnerMeme as IMeme] : [];
-  } else {
-    memes = await Meme.find({ session: activeSession._id }).sort('-totalVotes').lean() as IMeme[];
-  }
+  const memes: IMeme[] = activeSession.status === 'Completed' || activeSession.status === 'Contributing'
+    ? await Meme.findById(activeSession.winnerMeme).lean().then(winner => winner ? [winner as IMeme] : [])
+    : await Meme.find({ session: activeSession._id }).sort('-totalVotes').lean() as IMeme[];
 
   const transformedData: MemeArenaData = {
-      session: transformSession(activeSession as IMemeArenaSession),
-      memes: memes.map(meme => transformMeme(meme as IMeme)),
+    id: activeSession._id.toString(),
+    createdAt: activeSession.createdAt.toISOString(),
+    session: transformSession(activeSession as IMemeArenaSession),
+    memes: memes.map(meme => transformMeme(meme as IMeme))
   };
   
-  return transformedData; 
+  return transformedData;
 }
 
 // ** Vote for a meme
-export async function createMemeVote(createMemeDto: Partial<CreateMemeVoteDto>): Promise<MemeData> {
+export async function createMemeVote(voteMemeParams: Partial<VoteMemeParams>): Promise<MemeData> {
   await connectToDatabase()
-  const sanitized = sanitize(createMemeDto);
+  const sanitized = sanitize(voteMemeParams);
   const session = await MemeArenaSession.findById({ _id: sanitized.session });
   if (!session || !['Voting', 'LastVoting'].includes(session.status)) {
       throw new Error('Invalid session or voting not active');
@@ -161,8 +169,6 @@ export async function createMemeVote(createMemeDto: Partial<CreateMemeVoteDto>):
     }
 
   const transformedMeme = transformMeme(updatedMeme);
-
-  sendUpdate({ type: 'vote-update', meme: transformedMeme}); 
 
   if (updatedMeme.totalVotes === session.votingThreshold && session.status === 'Voting') {
     console.log('Voting threshold reached');
@@ -211,8 +217,7 @@ export async function startLastVotingOnSession(sessionId: string) {
  
     await dbSession.commitTransaction();
  
-    sendUpdate({ 
-      type: 'voting-threshold-reached',
+    sendUpdate('voting-threshold-reached',{ 
       session: transformSession(updatedSession as IMemeArenaSession),
       votingEndTime: timerResult?.scheduledTime?.toISOString(),
       sessionId: session.id.toString(),
@@ -250,12 +255,23 @@ export async function startLastVotingOnSession(sessionId: string) {
     if (!winnerMeme) {
       throw new Error('No memes found for this session');
     }
-
+    
     await Meme.findByIdAndUpdate(
       winnerMeme._id, 
       { isWinner: true },
       { session }
     );
+
+    console.log(winnerMeme.memeProgramId)
+    // Create meme registry on program
+    const sdk = new MemeFundSDK();
+    console.log('sdk')
+    const result = await sdk.createMemeRegistry(winnerMeme.memeProgramId);
+    console.log(result);
+    if (!result.success) {
+      await session.abortTransaction();
+      throw new Error(`Failed to create meme registry: ${result.error}`);
+    }
 
     const timerService = MemeArenaTimerService.getInstance();
     const contributeTimerResult = await timerService.scheduleContributingEnd(
@@ -266,11 +282,6 @@ export async function startLastVotingOnSession(sessionId: string) {
     if (!contributeTimerResult.success) {
       throw new Error('Failed to schedule contributing end');
     }
-    const time = contributeTimerResult?.scheduledTime?.getTime();
-    let nextSessionStartTime;
-    if (time !== undefined) {
-     nextSessionStartTime = new Date(time + memeSession.nextSessionDelay);
-    }    
 
     const updatedSession = await MemeArenaSession.findByIdAndUpdate(
       sessionId,
@@ -279,8 +290,9 @@ export async function startLastVotingOnSession(sessionId: string) {
         endTime: new Date(now),
         winnerMeme: winnerMeme._id,
         contributeEndTime: contributeTimerResult.scheduledTime,
-        nextSessionStartTime,
-        lastUpdateTime: now
+        nextSessionStartTime: contributeTimerResult.nextSessionTime,
+        lastUpdateTime: now,
+        totalContributions: 0
       },
       { new: true, session }
     );
@@ -288,12 +300,14 @@ export async function startLastVotingOnSession(sessionId: string) {
     await session.commitTransaction();
 
     if (updatedSession) {
-      sendUpdate({ 
-        type: 'contributing-started', 
-        meme: transformMeme(winnerMeme),
-        session: transformSession(updatedSession as IMemeArenaSession),
+      sendUpdate('contributing-started',{ 
+        meme: {
+          ...transformMeme(winnerMeme),
+          isWinner: true
+        },
+        session: transformSession(updatedSession),
         timestamp: now
-      });     
+      });
     }
 
     return updatedSession;
@@ -306,9 +320,9 @@ export async function startLastVotingOnSession(sessionId: string) {
 }
 
 // ** Create a new meme contribution
-export async function createMemeContribution(createMemeContributionDto: CreateMemeContributionDto) {
+export async function createMemeContribution(contributeMemeParams: ContributeMemeParams) {
   await connectToDatabase();
-  const sanitized = sanitize(createMemeContributionDto);
+  const sanitized = sanitize(contributeMemeParams);
   const now = Date.now();
  
   const dbSession = await mongoose.startSession();
@@ -346,37 +360,41 @@ export async function createMemeContribution(createMemeContributionDto: CreateMe
       throw new Error('A contribution for this meme has already been made from this address');
     }
  
-    const newContribution = await MemeContribution.create([{
+    const [newContribution] = await MemeContribution.create([{
       ...sanitized,
-      createdAt: now
+      createdAt: new Date()
     }], { session: dbSession });
- 
-    const result = await MemeContribution.aggregate([
+
+    const winnerMeme = await Meme.findById(session.winnerMeme).lean();
+    if (!winnerMeme) {
+      throw new Error('Winner meme not found');    }
+    
+    await dbSession.commitTransaction();
+
+    const totalAmount = await MemeContribution.aggregate([
       { $match: { session: session._id } },
       { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]).session(dbSession);
- 
-    const totalContributions = result[0]?.total || 0;
-    
+    ]);
+
+    const uniqueContributors = await MemeContribution.distinct('contributor', { session: session._id });
+
     const updatedSession = await MemeArenaSession.findByIdAndUpdate(
       session._id,
       {
-        totalContributions,
-        lastUpdateTime: now
+        totalContributions: totalAmount[0]?.total || 0,
+        contributorCount: uniqueContributors.length
       },
-      { new: true, session: dbSession }
+      { new: true }
     );
- 
-    await dbSession.commitTransaction();
- 
-    sendUpdate({ 
-      type: 'new-contribution', 
-      contribution: transformContribution(newContribution[0]), 
+    
+
+    sendUpdate('new-contribution',{ 
+      contribution: transformContribution(newContribution), 
       session: transformSession(updatedSession as IMemeArenaSession),
       timestamp: now
     });
  
-    return transformContribution(newContribution[0]);
+    return transformContribution(newContribution);
   } catch (error) {
     await dbSession.abortTransaction();
     throw error;
@@ -394,25 +412,55 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     dbSession.startTransaction();
 
     const session = await MemeArenaSession.findById({ _id: sessionId }).session(dbSession);
+    console.log(session)
     if (!session || session.status !== 'Contributing') {
       throw new Error('Invalid session status');
     }
 
-    const mintAddress = "00x";
+    const winner = await Meme.findById(session.winnerMeme).lean();
+    if (!winner) {
+      throw new Error('Winner meme not found');
+    }
+
+     // Create token using SDK
+    const sdk = new MemeFundSDK();
+
+    // Start meme token creation
+    const tokenResult = await sdk.startMeme(
+      winner.memeProgramId,
+      {
+        name: winner.name,
+        symbol: winner.ticker,
+        description: winner.description,
+        imageUrl: winner.image,
+        twitter: "",
+        telegram: "",
+        website: ""
+      }
+    );
+
+    if (!tokenResult.success) {
+      throw new Error(`Token creation failed: ${tokenResult.error}`);
+    }
+  
+    
     const timerService = MemeArenaTimerService.getInstance();
     const timerResult = await timerService.scheduleNextSession(sessionId, session.nextSessionDelay);
 
     if (!timerResult.success) {
       throw new Error('Failed to schedule next session');
     }
-
+    
+    const now = new Date();
     const updatedSession = await MemeArenaSession.findByIdAndUpdate(
       sessionId, 
       { 
         endTime: new Date(),
         status: 'Completed',
-        tokenMintAddress: mintAddress,
-        nextSessionStartTime: timerResult.scheduledTime
+        tokenMintAddress: tokenResult.mintAddress,
+        tx: tokenResult.tx,
+        nextSessionStartTime: timerResult.scheduledTime,
+        lastUpdateTime: now,
       }, 
       { new: true, session: dbSession }
     );
@@ -422,10 +470,11 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     }
 
     await dbSession.commitTransaction();
+    const winnerMeme = await Meme.findById(session.winnerMeme).lean();
 
-    sendUpdate({ 
-      type: 'contributing-ended',
-      session: transformSession(updatedSession as IMemeArenaSession)
+    sendUpdate('contributing-ended',{ 
+      session: transformSession(updatedSession as IMemeArenaSession),
+      winnerMeme: winnerMeme ? transformMeme(winnerMeme as IMeme) : null
     });
     
     return updatedSession;
@@ -440,9 +489,15 @@ export async function endContributingAndStartNewSession(sessionId: string) {
 // ** Check contribution eligibility
 export async function checkContributionEligibility(memeId: string, contributor: string, ipAddress: string) {
   await connectToDatabase();
-  const activeSession = await MemeArenaSession.findOne({ status: 'Contributing' });
-  if (!activeSession || !activeSession.contributeEndTime || new Date() > activeSession.contributeEndTime) {
-      return { eligible: false, reason: 'No active contribution session' };
+  const activeSession = await MemeArenaSession.findOne({ 
+    status: 'Contributing',
+    contributeEndTime: { $gt: new Date() }
+  });
+  if (!activeSession) {
+    return { 
+      eligible: false, 
+      reason: 'No active contribution session' 
+    };
   }
 
   const ipContribution = await MemeContribution.findOne({
@@ -463,7 +518,7 @@ export async function checkContributionEligibility(memeId: string, contributor: 
     return { eligible: false, reason: 'Wallet already contributed' };
   }
 
-  return { eligible: true };
+  return { eligible: true, reason: null };
 
 }
 
@@ -477,4 +532,30 @@ export async function getActiveSessionContributions() {
 
   const contributions = await MemeContribution.find({ session: activeSession._id }).lean();
   return contributions.map(contribution => transformContribution(contribution as IMemeContribution));
+}
+
+// ** Get With Session ID Contributions
+export async function getWithSessionContributions(sessionId: string) {
+  await connectToDatabase();
+  const contributions = await MemeContribution.find({ 
+    session: sessionId 
+  })
+  .sort('-createdAt')
+  .lean();
+
+  const uniqueContributors = await MemeContribution.distinct('contributor', { 
+    session: sessionId 
+  });
+  const totalAmount = contributions.reduce((sum, contrib) => sum + contrib.amount, 0);
+
+  return {
+    items: contributions.map(contribution => ({
+      id: contribution._id.toString(),
+      contributor: contribution.contributor,
+      amount: contribution.amount,
+      createdAt: contribution.createdAt
+    })),
+    total: uniqueContributors.length,
+    totalAmount
+  };
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Transaction, Connection, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey } from '@solana/web3.js'
 import confetti from 'canvas-confetti'
 import BN from 'bn.js'
-import { MemeData, MemeArenaSessionData, CreateMemeContributionDto } from "@/types"
+import { MemeData, MemeArenaSessionData, ContributeMemeParams } from "@/types"
 import { createMemeContribution } from '@/lib/actions/meme-arena.action'
 
 const MAX_CONTRIBUTION_SOL = 1;
@@ -20,15 +20,24 @@ export function useWinnerMeme(
   const [purchaseAmount, setPurchaseAmount] = useState("")
   const [isContributing, setIsContributing] = useState(false)
   const [isTokenCreation, setIsTokenCreation] = useState(false)
-  const [isEligible, setIsEligible] = useState<boolean | null>(null)
+  const [isEligible, setIsEligible] = useState<boolean | null>(true)
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL!, 'confirmed')
 
   const checkEligibility = useCallback(async () => {
+    setEligibilityError(null);
+
+    if (session.status !== 'Contributing') {
+      setIsEligible(false);
+      setEligibilityError('Contribution period is not active');
+      return;
+    }
+
     if (!publicKey || !meme.id) {
-      setIsEligible(false)
-      return
+      setIsEligible(false);
+      return;
     }
 
     try {
@@ -39,19 +48,27 @@ export function useWinnerMeme(
           memeId: meme.id,
           contributor: publicKey.toString()
         })
-      })
-      const resData = await res.json()
-      setIsEligible(resData.result.eligible)
-    } catch {
-      setIsEligible(false)
+      });
+      
+      const data = await res.json();
+      
+      if (!data.result.eligible) {
+        setIsEligible(false);
+        setEligibilityError(data.result.reason || 'Not eligible for contribution');
+      } else {
+        setIsEligible(true);
+        setEligibilityError(null);
+      }
+    } catch (error) {
+      console.error('Eligibility check error:', error);
+      setIsEligible(false);
+      setEligibilityError('Failed to check eligibility');
     }
-  }, [meme.id, publicKey])
+  }, [meme.id, publicKey, session.status]);
 
   useEffect(() => {
-    if (isEligible === null) {
-      checkEligibility()
-    }
-  }, [checkEligibility, isEligible])
+    checkEligibility();
+  }, [checkEligibility]);
 
   useEffect(() => {
     if (meme.isWinner) {
@@ -108,88 +125,151 @@ export function useWinnerMeme(
     }
   }, []);
 
-  const handleContribute = useCallback(async () => {
-    if (!publicKey || !signTransaction || isEligible == false) {
-      return
+  const getClientIp = async (): Promise<string> => {
+    try {
+      const response = await fetch('/api/meme-arena/ip');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Failed to get IP:', error);
+      // Fallback IP for local development
+      return process.env.NODE_ENV === 'development' ? '127.0.0.1' : 'unknown';
     }
+  };
 
-    if (purchaseAmount === null || isNaN(parseFloat(purchaseAmount))) {
+  const handleContribute = useCallback(async () => {
+    if (!publicKey || !signTransaction || !isEligible) {
       return;
     }
+
+    if (!purchaseAmount || isNaN(parseFloat(purchaseAmount))) {
+      return;
+    }
+
     setIsContributing(true);
     let retries = 0;
+
     while (retries < MAX_RETRIES) { 
       try {
         
-        // Convert purchase amount SOL to lamports  
-        const contributionAmount = Math.min(parseFloat(purchaseAmount), MAX_CONTRIBUTION_SOL);
-        const lamports = new BN(Math.floor(contributionAmount * LAMPORTS_PER_SOL));
-        const anchorContributeResponse = await fetch('api/meme-arena/contribute', {
+        // Amount validation and conversion
+        const contributionAmount = Math.min(
+          parseFloat(purchaseAmount), 
+          MAX_CONTRIBUTION_SOL
+        );
+
+        const lamports = new BN(
+          Math.floor(contributionAmount * LAMPORTS_PER_SOL)
+        );
+
+        // Get transaction from API
+        const contributeResponse = await fetch('/api/meme-arena/contribute', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             memeProgramId: meme.memeProgramId,
-            contributor: publicKey,
-            amount: lamports.toString(), // send the amount in lamports
-          }),
-        })
-        if (!anchorContributeResponse.ok) {
-          throw new Error('Failed to create transaction')       
+            contributor: publicKey.toString(),
+            amount: lamports.toString()
+          })
+        });
+
+        if (!contributeResponse.ok) {
+          let errorMessage = 'Failed to create transaction';
+          try {
+            const errorData = await contributeResponse.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            console.error('Raw response:', await contributeResponse.text());
+          }
+          throw new Error(errorMessage);
         }
 
-        const { serializedTransaction, lastValidBlockHeight } = await anchorContributeResponse.json();
-        const transaction = Transaction.from(Buffer.from(serializedTransaction, 'base64'))
+        let responseData;
+        try {
+          responseData = await contributeResponse.json();
+        } catch (e) {
+          console.error('Failed to parse response:', e);
+          throw new Error('Invalid response from server');
+        }
 
+        const { serializedTransaction, lastValidBlockHeight } = responseData;
+
+        // Create and modify transaction
+        const transaction = Transaction.from(
+          Buffer.from(serializedTransaction, 'base64')
+        );
+
+        // Add memo instruction
         transaction.add(
           new TransactionInstruction({
             keys: [],
             programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-            data: Buffer.from(`Contribute ${contributionAmount} SOL to Meme: ${meme.name}`, "utf-8")
+            data: Buffer.from(
+              `Contribute ${contributionAmount} SOL to Meme: ${meme.name}`, 
+              "utf-8"
+            )
           })
-        );        
+        );
+
+        // Sign and send transaction
         const signed = await signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signed.serialize());
-        const confirmationStrategy = {
+        const signature = await connection.sendRawTransaction(
+          signed.serialize(),
+          { maxRetries: 3 } 
+        );
+
+        // Wait for confirmation
+        const confirmation = await connection.confirmTransaction({
           signature,
           blockhash: transaction.recentBlockhash!,
-          lastValidBlockHeight: lastValidBlockHeight
-        };
-        const confirm = await connection.confirmTransaction(confirmationStrategy);
-        if (confirm.value.err) {
-          throw new Error('Transaction failed');
+          lastValidBlockHeight
+        }, 'confirmed');
+
+
+        if (confirmation.value.err) {
+          throw new Error(`Transaction failed: ${confirmation.value.err}`);
         }
-        const response = await fetch('/api/meme-arena/ip')
-        const ipResponse = await response.json()
-        const dto: CreateMemeContributionDto = {
+
+        // Get client IP
+        const contributorIp = await getClientIp();
+
+        await createMemeContribution({
           meme: meme.id,
           session: session.id,
           contributor: publicKey.toString(),
-          contributorIpAddress: ipResponse.ip,
-          amount: lamports.toNumber(), // store the amount in lamports
-        }
-        await createMemeContribution(dto)        
-        setIsContributing(false)
-        checkEligibility()
+          contributorIpAddress: contributorIp,
+          amount: lamports.toNumber()
+        });
+
+        setIsContributing(false);
+        await checkEligibility();
         break;
 
       } catch (error) {
         retries++;
         if (retries < MAX_RETRIES) {
-          //toast.error(`Attempt ${retries} failed. Retrying...`)
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
-        } else {
-          setIsContributing(false)
-          //toast.error('Failed to contribute after multiple attempts. Please try again later.')
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          continue;
         }
-        throw error
+        
+        console.error('Contribution error:', error);
+        setIsContributing(false);
+        throw error;
       }
     }
 
-    setIsContributing(false)
+    setIsContributing(false);
 
-  }, [meme, publicKey, purchaseAmount, session.id, signTransaction, connection, isEligible, checkEligibility])
+}, [
+  meme, 
+  publicKey, 
+  purchaseAmount, 
+  session.id, 
+  signTransaction, 
+  connection, 
+  isEligible, 
+  checkEligibility
+]);
 
   return {
     isVisible,
@@ -198,6 +278,7 @@ export function useWinnerMeme(
     setPurchaseAmount: setPurchaseAmountWithLimit,
     isTokenCreation,
     isEligible,
+    eligibilityError,
     handleContribute,
     copyToClipboard,
     MAX_CONTRIBUTION_SOL,

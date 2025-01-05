@@ -1,6 +1,6 @@
 import { sendUpdate } from "@/app/api/sse/route";
 import { getActiveSessionMemes } from "@/lib/actions/meme-arena.action";
-import { convertTest, createMemeFromNews } from "@/lib/actions/meme-news.action";
+import { createMemeFromNews } from "@/lib/actions/meme-news.action";
 import { NextRequest } from "next/server";
 
 export async function POST(
@@ -17,10 +17,9 @@ export async function POST(
       });
     }
 
-    const meme = await convertTest(id);
+    //const meme = await convertTest(id);
 
-    sendUpdate({
-      type: 'news-converted',
+    sendUpdate('news-converted',{
       data: {
         newsId: id,
         meme: meme,       

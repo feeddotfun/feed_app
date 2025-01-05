@@ -24,11 +24,13 @@ export function createGenericQuery<
         queryKey: queryKeys.all(),
         queryFn: () => service.getAll(),
         staleTime: config?.staleTime ?? defaultConfig?.staleTime,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false
       });
     };
 
-    const useCustomAction = <R>(
-      actionFn: (params: P) => Promise<R>
+    const useCustomAction = <TParams, TResult = T>(
+      actionFn: (params: TParams) => Promise<TResult>
     ) => {
       return useMutation({
         mutationFn: actionFn,

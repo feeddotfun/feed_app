@@ -55,6 +55,65 @@ export const MemeGridSkeleton = () => {
   );
 };
 
+export const MemeArenaSkeleton = () => {
+  return (
+    <div className="py-4 space-y-6">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Meme Arena</h1>
+        
+        {/* Status and Timer Section */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="h-7 w-28 bg-muted/60 rounded-full animate-pulse" />
+          <div className="h-5 w-48 bg-muted/60 rounded-full animate-pulse" />
+        </div>
+
+        <Separator className="shadow mb-6"/>
+
+        {/* Grid of Meme Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[...Array(6)].map((_, index) => (
+            <Card key={index} className="h-full flex flex-col hover:shadow-lg transition-all duration-300">
+              {/* Image Section */}
+              <div className="relative w-full aspect-[16/9] bg-muted group">
+                <div className="absolute inset-0 animate-pulse" />
+                
+                {/* Badge Skeleton */}
+                <div className="absolute top-2 left-2">
+                  <div className="h-6 w-24 bg-background/80 rounded-full animate-pulse" />
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="h-7 w-48 bg-muted rounded animate-pulse" />
+                  <div className="h-6 w-20 bg-muted rounded-full animate-pulse" />
+                </div>
+              </CardHeader>
+
+              <CardContent className="pb-2 flex-grow">
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-5/6 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-4/6 bg-muted rounded animate-pulse" />
+                </div>
+              </CardContent>
+
+              <CardFooter className="pt-4 flex justify-between items-center border-t">
+                <div className="h-6 w-16 bg-muted rounded animate-pulse" />
+                <div className="flex gap-2">
+                  <div className="h-8 w-8 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-20 bg-primary/20 rounded animate-pulse" />
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const AINewsLabSkeleton = () => {
   return (
     <div className="py-4 space-y-6">

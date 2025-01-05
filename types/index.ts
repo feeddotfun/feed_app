@@ -1,10 +1,11 @@
 import { Icons } from "@/components/ui/icon";
 export * from './base.types';
-export * from './community-setting.types';
 
-export * from './meme-arena-types';
-//export * from './community-setting-types';
-export * from './ai-news-lab-types';
+export * from './dashboard.types'
+export * from './meme-arena.types';
+export * from './community-setting.types';
+export * from './ai-news-lab.types';
+
 export interface NavItem {
     title: string;
     href?: string;
@@ -24,15 +25,3 @@ export const SYSTEM_CONFIG_OPTIONS = {
   } as const;
 
 
-export interface SystemConfigVoteData {
-    settingKey: string;
-    optionValue: number;
-    votes: number;
-}
-
-export interface CreateSystemSettingVoteDto {
-    voter: string;
-    voterIpAddress: string;
-    settingKey: string;
-    selectedValue: number;
-}

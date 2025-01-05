@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
 
       // Send initial connection message
       const encoder = new TextEncoder();
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`));
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+        type: 'connected', 
+        clientId 
+      })}\n\n`));
 
       // Keep-alive interval
       const keepAlive = setInterval(() => {
@@ -19,10 +22,12 @@ export async function GET(request: NextRequest) {
         } catch (error) {
           console.error('Keep-alive error:', error);
           clearInterval(keepAlive);
+          sseManager.removeClient(clientId);
         }
       }, 15000);
 
       request.signal.addEventListener('abort', () => {
+        console.log(`Client ${clientId} connection aborted`);
         clearInterval(keepAlive);
         sseManager.removeClient(clientId);
         controller.close();
@@ -40,7 +45,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Export utility function for other routes to use
-export function sendUpdate(data: unknown) {
+export function sendUpdate(type: string, data: Record<string, any>) {
   const sseManager = SSEManager.getInstance();
-  sseManager.broadcast(data);
+  return sseManager.broadcast(type, data);
 }

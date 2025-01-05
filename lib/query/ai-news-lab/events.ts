@@ -4,9 +4,8 @@ import { QueryKeys } from '../core/query-keys';
 
 const queryKeys = new QueryKeys('aiNewsLab');
 
-export const handleAINewsLabEvents = (event: MessageEvent, queryClient: QueryClient) => {
+export const handleAINewsLabEvents = (data: any, queryClient: QueryClient) => {
   try {
-    const data = JSON.parse(event.data);    
     
     switch (data.type) {
       case 'news-converted':

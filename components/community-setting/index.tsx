@@ -8,7 +8,7 @@ import SolIcon from '@/components/ui/solana-icon';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
 import { CommunitySettingKeyType, CommunitySettingOption } from '@/types';
-import { SETTINGS_CONFIG } from '@/constants/community-setting-config';
+import { SETTINGS_CONFIG } from '@/constants/community-setting.config';
 import { SettingCard } from './setting-card';
 import { VotingProgress } from './voting-progress';
 import { useCommunitySetting } from '@/lib/query/community-setting/hooks';

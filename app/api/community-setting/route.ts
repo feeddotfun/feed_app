@@ -3,7 +3,7 @@ import SystemConfigVotes from '@/lib/database/models/system-config-votes.model';
 import { BaseResponse, CommunitySettingData } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { VOTING_PERIOD } from '@/constants/community-setting-config';
+import { VOTING_PERIOD } from '@/constants/community-setting.config';
 
 import { sendUpdate } from "@/app/api/sse/route";
 
@@ -41,8 +41,7 @@ export async function POST(req: NextRequest) {
         lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
       }).lean();
 
-      sendUpdate({
-        type: 'vote-update',
+      sendUpdate('vote-update',{
         data: {
           settingKey: body.settingKey,
           vote: updatedVote,

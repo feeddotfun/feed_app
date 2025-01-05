@@ -39,6 +39,8 @@ export interface IMeme extends Document {
     memeProgramId: string;
     tokenMintAddress: string;
     isFromNews: boolean
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IMemeArenaSession extends Document {
@@ -55,7 +57,11 @@ export interface IMemeArenaSession extends Document {
     nextSessionStartTime?: Date;
     contributeEndTime?: Date;
     totalContributions: number;
+    contributorCount: number,
     tokenMintAddress?: string;
+    tx?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IMemeContribution extends Document {
@@ -65,6 +71,8 @@ export interface IMemeContribution extends Document {
     contributor: string;
     contributorIpAddress: string;
     amount: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IMemeNews extends Document {

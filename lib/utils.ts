@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./database/types";
 import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
+import BN from "bn.js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -18,7 +19,7 @@ export const formatPhaseString = (status: string) => {
     case 'Voting':
       return 'Voting';
     case 'LastVoting':
-      return 'Last Voting';
+      return 'Final Voting';
     case 'Contributing':
       return 'Contributing';
     case 'Completed':
@@ -47,6 +48,7 @@ export function transformMeme(meme: IMeme): MemeData {
     memeProgramId: meme.memeProgramId,
     tokenMintAddress: meme.tokenMintAddress,
     isFromNews: meme.isFromNews,
+    createdAt: meme.createdAt.toISOString()
   };
 }
 
@@ -65,7 +67,10 @@ export function transformSession(session: IMemeArenaSession): MemeArenaSessionDa
     nextSessionStartTime: session.nextSessionStartTime,    
     contributeEndTime: session.contributeEndTime,   
     totalContributions: session.totalContributions, 
+    contributorCount: session.contributorCount || 0,
     tokenMintAddress: session.tokenMintAddress,
+    tx: session.tx || '',
+    createdAt: session.createdAt.toISOString(),
   };
 }
 
@@ -77,6 +82,7 @@ export function transformContribution(contribution: IMemeContribution): MemeCont
     contributor: contribution.contributor,
     contributorIpAddress: contribution.contributorIpAddress,
     amount: contribution.amount,
+    createdAt: contribution.createdAt.toISOString()
   };
 }
 
@@ -95,4 +101,45 @@ export const transformNewsItem = (item: IMemeNews): AINewsLabItem => {
 
 export const transformNewsItems = (items: IMemeNews[]): AINewsLabItem[] => {
   return items.map(transformNewsItem);
+};
+
+export function getIpAddress(req: Request): string {
+  // Vercel-specific headers
+  const forwarded = req.headers.get('x-forwarded-for');
+  const vercelIp = req.headers.get('x-real-ip');
+
+  // True IP address from x-forwarded-for or x-real-ip
+  if (forwarded) {
+    // x-forwarded-for can contain multiple IPs, get the first one
+    return forwarded.split(',')[0].trim();
+  }
+
+  if (vercelIp) {
+    return vercelIp;
+  }
+
+  // Local development fallback
+  if (process.env.NODE_ENV === 'development') {
+    return '127.0.0.1';
+  }
+
+  // Final fallback
+  return 'unknown';
+}
+
+
+// Solana Program Utils
+export function uuidToMemeIdAndBuffer(uuid: string): { memeId: number[], buffer: Buffer } {
+  const hexString = uuid.replace(/-/g, '');
+  const buffer = Buffer.from(hexString, 'hex');
+  const memeId = Array.from(buffer);
+  return { memeId, buffer };
+}
+
+export const calculateWithSlippageBuy = (
+  amount: BN,
+  basisPoints: BN
+): BN => {
+  const slippage = amount.mul(basisPoints).div(new BN(10000));
+  return amount.add(slippage);
 };

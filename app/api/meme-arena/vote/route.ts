@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createMemeVote } from '@/lib/actions/meme-arena.action';
-import { CreateMemeVoteDto } from '@/types';
+import { VoteMemeParams } from '@/types';
+import { sendUpdate } from '../../sse/route';
 
 export async function POST(req: Request) {
   try {
-    const body: CreateMemeVoteDto = await req.json();
+    const params: VoteMemeParams = await req.json();
 
-    const newMeme = await createMemeVote(body);
-    return NextResponse.json(newMeme, { status: 201 });
+    const result = await createMemeVote(params);
+    sendUpdate('meme-vote-update',{
+      meme: result,
+      timestamp: Date.now()
+    });
+    return NextResponse.json({
+      items: [result],
+      total: 1
+    });
   }
   catch (error) {
     if (error instanceof Error) {

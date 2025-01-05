@@ -2,9 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { handleAINewsLabEvents } from '@/lib/query/ai-news-lab/events';
 import { handleCommunitySettingEvents } from '@/lib/query/community-setting/events';
+import { handleMemeArenaEvents } from '@/lib/query/meme-arena/event';
+
+const MAX_RETRIES = 5;
+const INITIAL_RETRY_DELAY = 1000;
 
 export default function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -12,54 +16,129 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000, // 5 seconds
+            staleTime: 5 * 1000,
             retry: 3,
             retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             refetchOnWindowFocus: false,
           },
         },
       }), 
-  )
+  );
 
-  // SSE Connection Setup
-  useEffect(() => {
-    let eventSource: EventSource;
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const retryCountRef = useRef(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout>(null);
 
-    const connectSSE = () => {
-      eventSource = new EventSource('/api/sse');
+  const handleEvent = (parsedData: any) => {
+    console.log('Processing event:', parsedData.type);
+    
+    switch (parsedData.type) {
+      case 'connected':
+        retryCountRef.current = 0; // Reset retry count on successful connection
+        break;
+        
+      case 'new-meme':
+      case 'new-session':
+      case 'meme-vote-update':
+      case 'voting-threshold-reached':
+      case 'contributing-started':
+      case 'new-contribution':
+      case 'contributing-ended':
+        handleMemeArenaEvents(parsedData, queryClient);
+        break;
+        
+      case 'news-converted':
+        handleAINewsLabEvents(parsedData, queryClient);
+        break;
+        
+      case 'vote-update':
+      case 'config-update':
+        handleCommunitySettingEvents(parsedData, queryClient);
+        break;
+        
+      default:
+        console.log('Unhandled event type:', parsedData.type);
+    }
+  };
 
-      eventSource.onopen = () => {
-        console.log('SSE connection established');
-      };
+  const connectSSE = () => {
+    if (eventSourceRef.current?.readyState === EventSource.OPEN) {
+      return;
+    }
 
-      eventSource.onmessage = (event) => {
-        try {
-          const eventData = event.data;
-          console.log('SSE message received:', event.data);
-          //if (eventData.trim() === '') return;
+    if (retryCountRef.current >= MAX_RETRIES) {
+      return;
+    }
 
-          handleAINewsLabEvents(event, queryClient);
-          handleCommunitySettingEvents(event, queryClient);
-          
-        } catch (error) {
-          console.error('Error handling SSE message:', error);
-        }
-      };
+    console.log(`Connecting to SSE... (Attempt ${retryCountRef.current + 1}/${MAX_RETRIES})`);
+    
+    // Close existing connection if any
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
 
-      eventSource.onerror = (error) => {
-        console.error('SSE Error:', error);
-        eventSource.close();
-        // Try to reconnect after 5 seconds
-        setTimeout(connectSSE, 5000);
-      };
+    const eventSource = new EventSource('/api/sse');
+    eventSourceRef.current = eventSource;
+
+    eventSource.onopen = () => {
     };
 
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = event.data;
+        if (eventData.trim() === '') return;
+        
+        const parsedData = JSON.parse(eventData);
+        handleEvent(parsedData);
+      } catch (error) {
+        console.error('Error processing SSE message:', error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error);
+      eventSource.close();
+      
+      const retryDelay = INITIAL_RETRY_DELAY * Math.pow(2, retryCountRef.current);
+      retryCountRef.current += 1;
+      
+      console.log(`Reconnecting in ${retryDelay}ms... (Attempt ${retryCountRef.current}/${MAX_RETRIES})`);
+      
+      retryTimeoutRef.current = setTimeout(() => {
+        connectSSE();
+      }, retryDelay);
+    };
+  };
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page became visible, checking SSE connection');
+        if (!eventSourceRef.current || eventSourceRef.current.readyState !== EventSource.OPEN) {
+          retryCountRef.current = 0; // Reset retry count
+          connectSSE();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Initial connection
+  useEffect(() => {
     connectSSE();
 
     return () => {
-      if (eventSource) {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+      if (eventSourceRef.current) {
         console.log('Closing SSE connection');
-        eventSource.close();
+        eventSourceRef.current.close();
       }
     };
   }, [queryClient]);

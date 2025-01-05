@@ -9,9 +9,9 @@ import { AlertCircle, Sparkles, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { cn } from "@/lib/utils";
-import { useMemeArena } from '@/lib/queries/meme-queries';
 import { useAINewsLab } from '@/lib/query/ai-news-lab/hooks';
 import { AINewsLabSkeleton } from '../skeletons';
+import { useMemeArena } from '@/lib/query/meme-arena/hooks';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -21,15 +21,15 @@ export default function NewsLabContent() {
   const [loadingItems, setLoadingItems] = React.useState<{[key: string]: boolean}>({});
   
   const { items, convertMutation } = useAINewsLab();
-  const { data: memeArenaData } = useMemeArena();
+  const { session, memes } = useMemeArena();
 
 
-  if (items.isLoading || !items.data || !memeArenaData) {
+  if (items.isLoading || !items.data || !session) {
     return <AINewsLabSkeleton />;
   }
 
   const handleTransformToMeme = async (newsId: string) => {
-    if (memeArenaData?.memes?.length >= memeArenaData?.session?.maxMemes) {
+    if (memes?.length >= session?.maxMemes) {
       return;
     }
     
@@ -47,9 +47,6 @@ export default function NewsLabContent() {
     setVisibleItems(prev => prev + ITEMS_PER_PAGE);
   };
 
-  if (items.isLoading) {
-    return <div>Loading...</div>;
-  }
 
   if (items.error) {
     return <div>Error loading news</div>; 
@@ -67,10 +64,10 @@ export default function NewsLabContent() {
             Transform trending news into viral memes ✨
           </p>
           <div className="flex items-center gap-4">
-            {memeArenaData && (
+            {memes && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                Arena Slots: {memeArenaData.memes.length}/{memeArenaData.session.maxMemes}
+                Arena Slots: {memes.length}/{session.maxMemes}
               </Badge>
             )}
             <Badge variant="secondary" className="bg-primary/10 text-primary">
@@ -161,14 +158,14 @@ export default function NewsLabContent() {
                       <Button
                         className="w-full bg-primary hover:bg-primary/90"
                         onClick={() => handleTransformToMeme(item.id)}
-                        disabled={loadingItems[item.id] || convertMutation.isPending || (memeArenaData?.memes?.length >= memeArenaData?.session?.maxMemes)}
+                        disabled={loadingItems[item.id] || convertMutation.isPending || (memes?.length >= session?.maxMemes)}
                       >
                         {loadingItems[item.id] ? (
                           <span className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             <span>Converting...</span>
                           </span>
-                        ) : memeArenaData?.memes?.length >= memeArenaData?.session?.maxMemes ? (
+                        ) : memes?.length >= session?.maxMemes ? (
                           <span className="flex items-center gap-2">
                             <AlertCircle className="w-4 h-4" />
                             Arena Full

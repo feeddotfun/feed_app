@@ -1,30 +1,42 @@
-import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trophy } from 'lucide-react'
-import { MemeData, MemeArenaSessionData } from "@/types"
-import { useWinnerMeme } from '@/hooks/use-winner-meme'
-import { ContributionForm } from './contribution-form'
-import { MemeDetails } from './winner-meme-detail'
-import { TokenCreation } from './token-creation'
-import { CompletedMeme } from './completed-meme'
-import { Transaction, VersionedTransaction } from '@solana/web3.js'
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy } from 'lucide-react';
+import { MemeData, MemeArenaSessionData } from "@/types";
+import { useWinnerMeme } from '@/hooks/use-winner-meme';
+import { ContributionForm } from './contribution-form';
+import { MemeDetails } from './winner-meme-detail';
+import { TokenCreation } from './token-creation';
+import { CompletedMeme } from './completed-meme';
+import { Transaction } from '@solana/web3.js';
+
+interface SystemConfig {
+  maxContributionSol: number;
+  minContributionSol: number;
+}
 
 interface WinnerMemeProps {
   meme: MemeData;
   session: MemeArenaSessionData;
   connected: boolean;
   publicKey?: string;
-  signTransaction?: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>;
+  signTransaction?: (transaction: Transaction) => Promise<Transaction>;
+  systemConfig: SystemConfig;
 }
 
-export default function WinnerMeme({ meme, session, publicKey, signTransaction }: WinnerMemeProps) {
+export default function WinnerMeme({
+  meme,
+  session,
+  connected,
+  publicKey,
+  signTransaction,
+  systemConfig
+}: WinnerMemeProps) {
   const {
     isVisible,
     remainingTime,
     isTokenCreation,
     isEligible,
-    MAX_CONTRIBUTION_SOL,
     isContributing,
     handleContribute,
     purchaseAmount,
@@ -55,21 +67,25 @@ export default function WinnerMeme({ meme, session, publicKey, signTransaction }
               <TokenCreation />
             ) : (
               <>
-                <MemeDetails meme={meme} remainingTime={remainingTime} session={session} />
+                <MemeDetails 
+                  meme={meme} 
+                  remainingTime={remainingTime} 
+                  session={session} 
+                />
                 {session.status === 'Contributing' && (
                   <ContributionForm 
-                    isEligible={isEligible!} 
-                    MAX_CONTRIBUTION_SOL={MAX_CONTRIBUTION_SOL}
+                    isEligible={isEligible!}
+                    minContributionSol={systemConfig.minContributionSol}
+                    maxContributionSol={systemConfig.maxContributionSol}                   
                     isContributing={isContributing}
                     handleContribute={handleContribute}
                     purchaseAmount={purchaseAmount}
                     setPurchaseAmount={setPurchaseAmount}
+                    connected={connected}
                   />
                 )}
-                {session.status === 'Completed' && meme.memeProgramId && (
-                  <CompletedMeme 
-                    session={session}
-                  />
+                {session.status === 'Completed' && session.tokenMintAddress && (
+                  <CompletedMeme session={session} />
                 )}
               </>
             )}
@@ -77,5 +93,5 @@ export default function WinnerMeme({ meme, session, publicKey, signTransaction }
         </Card>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

@@ -1,26 +1,63 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import SolIcon from '@/components/ui/solana-icon'
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import SolIcon from '@/components/ui/solana-icon';
 
 interface ContributionFormProps {
-  isEligible: boolean;
-  MAX_CONTRIBUTION_SOL: number;
+  isEligible: boolean;  
+  minContributionSol: number;
+  maxContributionSol: number;
+  eligibilityError?: string | null;
   isContributing: boolean;
   handleContribute: () => Promise<void>;
   purchaseAmount: string;
   setPurchaseAmount: (amount: string) => void;
+  connected: boolean;
 }
 
 export const ContributionForm: React.FC<ContributionFormProps> = ({
   isEligible,
-  MAX_CONTRIBUTION_SOL,
+  minContributionSol,
+  maxContributionSol,
   isContributing,
+  eligibilityError,
   handleContribute,
   purchaseAmount,
-  setPurchaseAmount
+  setPurchaseAmount,
+  connected
 }) => {
+  if (!connected) {
+    return (
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="mt-4"
+      >
+        <WalletMultiButton className="mx-auto" />
+        <p className="text-sm text-muted-foreground mt-2">
+          Connect your wallet to contribute to this meme
+        </p>
+      </motion.div>
+    );
+  }
+
+  if (!isEligible) {
+    return (
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="mt-4"
+      >
+        <p className="text-sm text-red-500 font-medium">
+          {eligibilityError || `You've already contributed. A second contribution is not permitted.`}
+        </p>
+      </motion.div>
+    );
+  }
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -30,10 +67,10 @@ export const ContributionForm: React.FC<ContributionFormProps> = ({
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {[0.1, 0.3, 0.5, 1].map((amount) => (
-          <Button 
+          <Button
             key={amount}
             size="sm"
-            disabled={!isEligible}
+            disabled={isContributing}
             variant="outline"
             className="font-bold transition-all transform hover:scale-105 hover:bg-primary hover:text-primary-foreground"
             onClick={() => setPurchaseAmount(amount.toString())}
@@ -43,25 +80,33 @@ export const ContributionForm: React.FC<ContributionFormProps> = ({
           </Button>
         ))}
       </div>
+      
       <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full">
-        <Input
+      <Input
           type="number"
           disabled={!isEligible || isContributing}
-          placeholder="Amount in SOL"
           value={purchaseAmount ?? ''}
           onChange={(e) => setPurchaseAmount(e.target.value)}
-          max={MAX_CONTRIBUTION_SOL}
-          step="0.1"
+          min={minContributionSol}
+          max={maxContributionSol}
+          step={minContributionSol}
           className="w-full sm:w-2/3"
         />
-        <Button 
-          disabled={!isEligible || purchaseAmount === null || isNaN(parseFloat(purchaseAmount)) || isContributing} 
-          className='w-full sm:w-1/3'         
+        <Button
+          disabled={
+            !isEligible || 
+            !purchaseAmount || 
+            isNaN(parseFloat(purchaseAmount)) || 
+            parseFloat(purchaseAmount) < minContributionSol ||
+            parseFloat(purchaseAmount) > maxContributionSol ||
+            isContributing
+          } 
+          className="w-full sm:w-1/3"
           onClick={handleContribute}
         >
-          {!isContributing ? 'Contribute' : 'Contributing...'} 
+          {isContributing ? 'Contributing...' : 'Contribute'}
         </Button>
       </div>
     </motion.div>
-  )
-}
+  );
+};

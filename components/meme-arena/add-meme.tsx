@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { PlusCircle, Upload, ImageIcon } from "lucide-react";
+import { PlusCircle, ImageIcon } from "lucide-react";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useCreateMeme } from '@/lib/queries/meme-queries';
 
 const MAX_FILE_SIZE = 2000000;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -41,15 +40,19 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface AddMemeProps {
   sessionId: string;
+  onCreate: (name: string, ticker: string, description: string, image: string) => Promise<void>,
+  isCreating: boolean,
 }
 
-const AddMeme: React.FC<AddMemeProps> = ({ sessionId }) => {
+export default function AddMeme({
+  sessionId,
+  onCreate,
+  isCreating
+}: AddMemeProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  
-  const createMemeMutation = useCreateMeme();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -85,13 +88,12 @@ const AddMeme: React.FC<AddMemeProps> = ({ sessionId }) => {
       const imageUrl = await uploadImageToCloud(values.image);
       
       // Create meme with the uploaded image URL
-      await createMemeMutation.mutateAsync({
-        session: sessionId,
-        name: values.name,
-        ticker: values.ticker,
-        description: values.description,
-        image: imageUrl,
-      });
+      await onCreate(
+        values.name,
+        values.ticker,
+        values.description,
+        imageUrl
+      )
       
       // Reset form and close dialog
       form.reset();
@@ -255,10 +257,10 @@ const AddMeme: React.FC<AddMemeProps> = ({ sessionId }) => {
               </Button>
               <Button 
                 type="submit"
-                disabled={isSubmitting || createMemeMutation.isPending}
+                disabled={isSubmitting || isCreating}
                 className="min-w-[100px]"
               >
-                {(isSubmitting || createMemeMutation.isPending) ? (
+                {(isSubmitting || isCreating) ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     <span>Creating...</span>
@@ -274,5 +276,3 @@ const AddMeme: React.FC<AddMemeProps> = ({ sessionId }) => {
     </Dialog>
   );
 };
-
-export default AddMeme;

@@ -44,7 +44,9 @@ const MemeArenaSessionSchema = new Schema({
         type: Date,
     },
     totalContributions: { type: Number, default: 0 },
-    tokenMintAddress: { type: String },   
+    contributorCount: { type: Number, default: 0},
+    tokenMintAddress: { type: String },
+    tx: { type: String },
 }, { 
     timestamps: true
  })

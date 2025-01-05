@@ -20,7 +20,12 @@ export const TokenCreation: React.FC = () => {
         </div>
       </div>
       <h2 className="text-2xl font-bold mt-6">Creating Token</h2>
-      <p className="text-lg mt-2">Please wait while we create your token...</p>
+      <p className="text-lg mt-2">Please wait while we create token on pump.fun...</p>
+      <div className="mt-4 flex space-x-2">
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0s' }} />
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }} />
+        <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }} />
+      </div>
     </motion.div>
   )
 }

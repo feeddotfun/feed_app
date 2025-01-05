@@ -1,9 +1,9 @@
 import { checkContributionEligibility } from '@/lib/actions/meme-arena.action'
-import { CheckContributionEligibilityDto } from '@/types';
+import { CheckContributionEligibilityParams } from '@/types';
 import { NextRequest, NextResponse } from 'next/server'
-
+import { v4 as uuidv4 } from 'uuid';
 export async function POST(request: NextRequest) {
-  const body: CheckContributionEligibilityDto = await request.json();
+  const body: CheckContributionEligibilityParams = await request.json();
   let ip = request.headers.get("x-real-ip") || 
            request.headers.get("x-forwarded-for")?.split(',')[0].trim() || 
            ''
@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
     ip = ip.replace(/^.*:/, '')
   }
 
+  //!! Test
+  //ip = uuidv4()
+  
   const result = await checkContributionEligibility(body.memeId, body.contributor, ip!);
   return NextResponse.json({ result });
 }

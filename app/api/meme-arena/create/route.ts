@@ -1,16 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createMeme } from '@/lib/actions/meme-arena.action';
-import { CreateMemeDto } from '@/types';
+import { CreateMemeParams } from '@/types';
+import { sendUpdate } from '../../sse/route';
 
 export async function POST(req: Request) {
   try {
-    const body: CreateMemeDto = await req.json();
+    const body: CreateMemeParams = await req.json();
 
-    const newMeme = await createMeme(body);
-    return NextResponse.json(newMeme, { status: 201 });
+    const result = await createMeme(body);
+    sendUpdate('new-meme',{
+      meme: result,
+      timestamp: Date.now()
+    });
+    return NextResponse.json({
+      items: [result],
+      total: 1
+    });
   }
   catch (error) {
     if (error instanceof Error) {
+      console.log(error)
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to create meme' }, { status: 500 });

@@ -34,40 +34,11 @@ export async function getAvailableNewsMemes() {
         isHidden: shouldHide
       };
     }));
-    //const show =  updatedNews.filter(item => !item.isHidden && !item.isConverted); 
+    updatedNews.filter(item => !item.isHidden && !item.isConverted); 
     return transformNewsItems(updatedNews as IMemeNews[]);
 }
 
 
-// test
-export async function convertTest(newsId:string) {
-  await connectToDatabase();
-  const dbSession = await mongoose.startSession();
-  
-  try {
-    dbSession.startTransaction();
-    
-    const newsMeme = await MemeNews.findById(newsId).session(dbSession);
-    if (!newsMeme) {
-      throw new Error('News meme not found');
-    }
-  
-    const updatedNews = await MemeNews.findByIdAndUpdate(
-      newsMeme._id, 
-      { isHidden: true },
-      { new: true, session: dbSession }
-    ).lean();
-  
-    await dbSession.commitTransaction();
-    return updatedNews;
-  }
-  catch(error) {
-    console.log(error)
-    await dbSession.abortTransaction();
-    throw error;
-  }
-  
-}
 // Create meme from selected news
 export async function createMemeFromNews(sessionId: string, newsId: string) {
   await connectToDatabase();

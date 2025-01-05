@@ -1,4 +1,20 @@
+import { SETTINGS_CONFIG } from "@/constants/community-setting.config";
 import { BaseEntity } from "./base.types";
+
+export type CommunitySettingKeyType = keyof typeof SETTINGS_CONFIG;
+
+export interface CommunitySettingOption {
+  value: number;
+  label: string;
+  description?: string;
+  votes?: number;
+}
+
+export interface SettingConfig {
+  category: 'investment' | 'timing';
+  description: string;
+  options: CommunitySettingOption[];
+}
 
 export interface CommunityVote extends BaseEntity {
     settingKey: string;
@@ -23,4 +39,17 @@ export interface VoteParams {
     voter: string;
     settingKey: string;
     selectedValue: number;
+}
+
+export interface SystemConfigVoteData {
+  settingKey: string;
+  optionValue: number;
+  votes: number;
+}
+
+export interface CreateSystemSettingVoteDto {
+  voter: string;
+  voterIpAddress: string;
+  settingKey: string;
+  selectedValue: number;
 }

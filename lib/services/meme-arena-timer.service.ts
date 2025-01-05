@@ -1,5 +1,11 @@
 import { Client } from '@upstash/qstash';
 
+export enum SessionEventType {
+  VOTING_END = 'voting-end',
+  CONTRIBUTING_END = 'contributing-end',
+  START_SESSION = 'start-session'
+}
+
 export class MemeArenaTimerService {
   private static instance: MemeArenaTimerService;
   private qstash: Client;
@@ -17,45 +23,70 @@ export class MemeArenaTimerService {
     return MemeArenaTimerService.instance;
   }
 
-
-  private async scheduleEvent(url: string, sessionId: string, delay: number) {
-    const now = Date.now();
-    const endTime = Math.round((now + delay) / 1000);
-    
-    try {      
-      await this.qstash.publishJSON({
-        url: `${process.env.API_URL}${url}`,
-        body: { 
-          sessionId,
-          scheduledAt: now,
-          expectedEndTime: now + delay
-        },
-        notBefore: endTime,
-        retries: 3
-      });
-
-      return {
-        success: true,
-        scheduledTime: new Date(now + delay)
-      };
-    } catch (error) {
-      console.error(`Failed to schedule event: ${url}`, error);
-      return {
-        success: false,
-        error
-      };
-    }
+  private async scheduleQstashEvent(
+    eventType: SessionEventType,
+    sessionId: string,
+    scheduledAt: number,
+    expectedEndTime: number
+  ) {
+    return this.qstash.publishJSON({
+      url: `${process.env.API_URL}/api/timer/${eventType}`,
+      body: { 
+        sessionId,
+        scheduledAt,
+        expectedEndTime
+      },
+      notBefore: Math.round(expectedEndTime / 1000),
+      retries: 3
+    });
   }
+
+  private async scheduleContributingEndEvent(sessionId: string, delay: number) {
+    const now = Date.now();
+    const eventTime = now + delay;
+    const nextSessionTime = eventTime + delay;
+
+    // Schedule contributing end
+    await this.scheduleQstashEvent(
+      SessionEventType.CONTRIBUTING_END,
+      sessionId,
+      now,
+      eventTime
+    );
+
+    return {
+      success: true,
+      scheduledTime: new Date(eventTime),
+      nextSessionTime: new Date(nextSessionTime)
+    };
+  }
+
+  private async scheduleStandardEvent(eventType: SessionEventType, sessionId: string, delay: number) {
+    const now = Date.now();
+    const eventTime = now + delay;
+
+    await this.scheduleQstashEvent(
+      eventType,
+      sessionId,
+      now,
+      eventTime
+    );
+
+    return {
+      success: true,
+      scheduledTime: new Date(eventTime)
+    };
+  }
+
   async scheduleVotingEnd(sessionId: string, votingTimeLimit: number) {
-    return this.scheduleEvent('/api/timer/voting-end', sessionId, votingTimeLimit);
+    return this.scheduleStandardEvent(SessionEventType.VOTING_END, sessionId, votingTimeLimit);
   }
 
   async scheduleContributingEnd(sessionId: string, contributeFundingLimit: number) {
-    return this.scheduleEvent('/api/timer/contributing-end', sessionId, contributeFundingLimit);
+    return this.scheduleContributingEndEvent(sessionId, contributeFundingLimit);
   }
 
   async scheduleNextSession(sessionId: string, nextSessionDelay: number) {
-    return this.scheduleEvent('/api/timer/start-session', sessionId, nextSessionDelay);
+    return this.scheduleStandardEvent(SessionEventType.START_SESSION, sessionId, nextSessionDelay);
   }
-  
 }
