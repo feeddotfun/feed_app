@@ -17,7 +17,7 @@ export default async function NewsLabPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PageContainer>
+      <PageContainer scrollable={true}>
         <AINewsLab />
       </PageContainer>
     </HydrationBoundary>

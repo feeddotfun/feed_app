@@ -5,6 +5,7 @@ export * from './dashboard.types'
 export * from './meme-arena.types';
 export * from './community-setting.types';
 export * from './ai-news-lab.types';
+export * from './winning-memes.types'
 
 export interface NavItem {
     title: string;

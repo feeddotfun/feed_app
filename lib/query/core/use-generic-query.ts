@@ -1,5 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BaseEntity, QueryConfig } from '@/types';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
+import { 
+  BaseEntity, 
+  QueryConfig, 
+  ServiceResponse,
+  CacheContext
+} from '@/types';
 import { BaseService } from './base-service';
 import { QueryKeys } from './query-keys';
 import { CacheUtils } from './cache-utils';
@@ -7,7 +12,7 @@ import { CacheUtils } from './cache-utils';
 export function createGenericQuery<
   T extends BaseEntity, 
   S extends BaseService<T>,
-  P = any  // Generic parameter type for custom actions
+  P = any
 >(
   service: S,
   entityName: string,
@@ -29,14 +34,28 @@ export function createGenericQuery<
       });
     };
 
+    const useInfiniteItems = (config?: QueryConfig) => {
+      return useInfiniteQuery<ServiceResponse<T>, Error>({
+        queryKey: [...queryKeys.all(), 'infinite'],
+        queryFn: ({ pageParam = 1 }) => service.getInfinite({ page: pageParam as number, limit: 6 }),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) => lastPage.hasMore ? allPages.length + 1 : undefined,
+        staleTime: config?.staleTime ?? defaultConfig?.staleTime,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false
+      });
+    };
+
     const useCustomAction = <TParams, TResult = T>(
       actionFn: (params: TParams) => Promise<TResult>
     ) => {
-      return useMutation({
+      return useMutation<TResult, Error, TParams, CacheContext<T>>({
         mutationFn: actionFn,
         onMutate: async () => {
           await queryClient.cancelQueries({ queryKey: queryKeys.all() });
-          return { previousData: queryClient.getQueryData(queryKeys.all()) };
+          return { 
+            previousData: queryClient.getQueryData(queryKeys.all()) 
+          };
         },
         onError: (_, __, context) => {
           if (context?.previousData) {
@@ -51,6 +70,7 @@ export function createGenericQuery<
 
     return {
       useGetAll,
+      useInfiniteItems,
       useCustomAction,
       cacheUtils,
     };
