@@ -7,6 +7,7 @@ export * from './community-setting.types';
 export * from './ai-news-lab.types';
 export * from './winning-memes.types'
 export * from './investment.types'
+export * from './airdrop-stat.types'
 
 export interface NavItem {
     title: string;

@@ -54,7 +54,7 @@ export default function MyInvestmentsPage() {
 
   const renderContent = () => {
     if (!connected) {
-      return <ConnectWalletMessage />;
+      return <ConnectWalletMessage title='Investments' />;
     }
 
     if (isLoading) {

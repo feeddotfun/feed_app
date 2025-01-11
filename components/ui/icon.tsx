@@ -6,7 +6,8 @@ import {
     Settings,
     Trophy,
     Zap,
-    Newspaper
+    Newspaper,
+    Gift
   } from 'lucide-react';
   
   export type Icon = LucideIcon;
@@ -18,6 +19,7 @@ import {
     pieChart: PieChart,
     settings: Settings,
     arrowRight: ArrowRight,
-    news: Newspaper
+    news: Newspaper,
+    airdrop: Gift,
   };
   

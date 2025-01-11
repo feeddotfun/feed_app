@@ -171,6 +171,12 @@ export const formatCreatedTime = (date: string) => {
     .replace(' minute', 'm');
 };
 
+export const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 2,
+  }).format(num);
+};
+
 
 // Solana Program Utils
 export function uuidToMemeIdAndBuffer(uuid: string): { memeId: number[], buffer: Buffer } {

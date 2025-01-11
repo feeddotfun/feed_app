@@ -35,6 +35,11 @@ export const navigationItems: NavItem[] = [
     title: 'Community Setting',
     href: '/community-setting',
     icon: 'settings',
+  },
+  {
+    title: 'Airdrop Stats',
+    href: '/airdrop-stats',
+    icon: 'airdrop'
   }
   
 ];

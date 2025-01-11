@@ -3,12 +3,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "./ui/separator";
 import { motion } from "framer-motion";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { Award, ThumbsUp, Trophy, Vote } from "lucide-react";
 
+interface ConnectWalletMessageProps {
+  title: string;
+  description?: string;
+}
 export const MemeCardSkeleton = () => {
   return (
     <div className="h-6 w-32 bg-muted rounded-full animate-pulse" />
   );
 };
+
+
 
 export const MemeGridSkeleton = () => {
   return (
@@ -432,7 +439,10 @@ export const InvestmentCardSkeleton = () => {
   );
 };
 
-export const ConnectWalletMessage = () => {
+export const ConnectWalletMessage: React.FC<ConnectWalletMessageProps> = ({ 
+  title,
+  description = `Connect your wallet to see your ${title.toLowerCase()}`
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -440,8 +450,8 @@ export const ConnectWalletMessage = () => {
       transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center min-h-[400px] gap-4"
     >
-      <h1 className="text-2xl font-bold">My Investments</h1>
-      <p className="text-muted-foreground mb-4">Connect your wallet to see your investments</p>
+      <h1 className="text-2xl font-bold">{title}</h1>
+      <p className="text-muted-foreground mb-4">{description}</p>
       <WalletMultiButton />
     </motion.div>
   );
@@ -472,6 +482,88 @@ export const InvestmentsPageSkeleton = () => {
       {/* Load More Button Skeleton */}
       <div className="flex justify-center pt-4">
         <div className="h-10 w-32 bg-[#99FF19]/10 rounded animate-pulse" />
+      </div>
+    </div>
+  );
+};
+
+export const AirdropStatsSkeleton = () => {
+  return (
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      {/* Header with Total Points Progress */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-8 w-40 bg-muted/60" />
+          <Skeleton className="h-6 w-48 bg-muted/60 rounded-full" />
+        </div>
+        <Skeleton className="h-2 w-full bg-muted/60" />
+      </div>
+
+      {/* Wallet Info */}
+      <div className="flex items-center gap-2 p-4 bg-secondary/50 rounded-lg">
+        <Skeleton className="h-5 w-5 rounded-full bg-muted/60" />
+        <Skeleton className="h-5 w-64 bg-muted/60" />
+      </div>
+
+      {/* Activity Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[ThumbsUp, Vote, Trophy, Award].map((Icon, index) => (
+          <div key={index} className="bg-[#141716] rounded-lg p-6">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24 bg-muted/60 mb-2" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-8 w-16 bg-muted/60" />
+                <Icon className="w-6 h-6 text-[#99FF19] opacity-20" />
+              </div>
+              <Skeleton className="h-4 w-20 bg-muted/60" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Detailed Tabs */}
+      <div className="w-full">
+        {/* Tab Navigation Skeleton */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {['Votes', 'Contributions', 'Claims'].map((tab, index) => (
+            <Skeleton key={index} className="h-10 w-full bg-muted/60" />
+          ))}
+        </div>
+
+        {/* Tab Content Skeleton */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {/* Section Header */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <Skeleton className="h-6 w-48 bg-muted/60 mb-2" />
+                  <Skeleton className="h-4 w-64 bg-muted/60" />
+                </div>
+              </div>
+              
+              {/* Content Items */}
+              {[1, 2].map((_, index) => (
+                <div 
+                  key={index} 
+                  className="flex items-center justify-between p-6 rounded-lg border bg-card/50"
+                >
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-12 w-12 rounded-full bg-muted/60" />
+                    <div>
+                      <Skeleton className="h-4 w-32 bg-muted/60 mb-2" />
+                      <Skeleton className="h-7 w-16 bg-muted/60" />
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Skeleton className="h-4 w-20 bg-muted/60 mb-1" />
+                    <Skeleton className="h-5 w-24 bg-muted/60" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
