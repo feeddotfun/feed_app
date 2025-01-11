@@ -5,16 +5,15 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
-
-    const { items, totalPages, hasMore } = await getWinningMemes(page);
+    const data = await getWinningMemes(page);
     
     return NextResponse.json({
-      items,
-      totalPages,
-      hasMore
+      items: data.items,
+      total: data.items.length,
+      hasMore: data.hasMore,
+      totalPages: data.totalPages
     });
   } catch (error) {
-    console.error('Error fetching winning memes:', error);
     return NextResponse.json(
       { error: 'Failed to fetch winning memes' },
       { status: 500 }

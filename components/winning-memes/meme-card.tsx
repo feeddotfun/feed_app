@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { CopyAddress } from "@/components/ui/copy-address";
-import { formatDistanceToNow } from 'date-fns';
+import { formatCreatedTime } from '@/lib/utils';
 
 interface MemeCardProps {
   meme: {
@@ -24,17 +24,7 @@ const MemeCard: React.FC<MemeCardProps> = ({ meme }) => {
     return `$50K`;
   };
 
-  const formatCreatedTime = (date: string) => {
-    return formatDistanceToNow(new Date(date), { addSuffix: true })
-      .replace('about ', '')
-      .replace(' ago', '')
-      .replace(' days', 'd')
-      .replace(' day', 'd')
-      .replace(' hours', 'h')
-      .replace(' hour', 'h')
-      .replace(' minutes', 'm')
-      .replace(' minute', 'm');
-  };
+  
 
   return (
     <motion.div

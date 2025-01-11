@@ -43,7 +43,7 @@ export const DashboardStats = () => {
       <motion.div variants={item}>
         <StatsCard
           title="Trending Meme"
-          value={stats?.trendingMeme?.name || "No trending memes"}
+          value={stats?.trendingMeme?.name || "-"}
           icon={Trophy}
         />
       </motion.div>

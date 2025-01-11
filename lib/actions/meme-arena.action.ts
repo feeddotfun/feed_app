@@ -291,6 +291,7 @@ export async function startLastVotingOnSession(sessionId: string) {
         winnerMeme: winnerMeme._id,
         contributeEndTime: contributeTimerResult.scheduledTime,
         nextSessionStartTime: contributeTimerResult.nextSessionTime,
+        claimAvailableTime: Math.floor((contributeTimerResult.scheduledTime.getTime() + config.tokenClaimDelay) / 1000),
         lastUpdateTime: now,
         totalContributions: 0
       },
@@ -440,9 +441,15 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     );
 
     if (!tokenResult.success) {
+      console.log(tokenResult.tx)
+      console.log(tokenResult.error)
       throw new Error(`Token creation failed: ${tokenResult.error}`);
     }
-  
+    
+    const vaultTokens = await sdk.getVaultTokenAccount(
+      tokenResult.mintAddress!,
+      winner.memeProgramId
+    );
     
     const timerService = MemeArenaTimerService.getInstance();
     const timerResult = await timerService.scheduleNextSession(sessionId, session.nextSessionDelay);
@@ -457,6 +464,7 @@ export async function endContributingAndStartNewSession(sessionId: string) {
       { 
         endTime: new Date(),
         status: 'Completed',
+        initialVaultTokens: vaultTokens.amount,
         tokenMintAddress: tokenResult.mintAddress,
         tx: tokenResult.tx,
         nextSessionStartTime: timerResult.scheduledTime,

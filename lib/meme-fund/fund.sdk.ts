@@ -1,8 +1,8 @@
 import { AnchorProvider, BN, Program, web3 } from "@coral-xyz/anchor";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import axios from 'axios';
 import FormData from 'form-data';
-import { ComputeBudgetProgram, Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { ComputeBudgetProgram, Connection, Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { IDL, MemeFund } from "./IDL";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { calculateWithSlippageBuy, uuidToMemeIdAndBuffer } from "../utils";
@@ -124,13 +124,13 @@ export class MemeFundSDK {
                 throw new Error('Vault account not found');
 
             const lamports = vaultAccountInfo.lamports;
-            const lamportsForBuy = new BN(lamports).sub(new BN(30000000)); //0.0013 SOL
+            const lamportsForBuy = new BN(lamports).sub(new BN(50000000)); //0.0013 SOL **30000000
             const buyAmountSol = lamportsForBuy.mul(new BN(1e9)).div(new BN(web3.LAMPORTS_PER_SOL));
             const globalAccount = GlobalAccount.fromBuffer(tokenAccount!.data);
             const buyAmount = globalAccount.getInitialBuyPrice(buyAmountSol);
             const buyAmountWithSlippage = calculateWithSlippageBuy(buyAmount, this.SLIPPAGE_BASIS_POINTS);        
             const modifyComputeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
-                units: 500000
+                units: 700000
             });
 
             let tokenMetadata = await this.createTokenMetadata(createTokenMetadata);
@@ -226,5 +226,116 @@ export class MemeFundSDK {
             throw error;
         }
     }
+
+    async getVaultTokenAccount(mintAddress: string, memeUuid: string): Promise<{ amount: number }> {
+        try {
+            const { memeId, buffer: memeIdBuffer } = uuidToMemeIdAndBuffer(memeUuid);
+            
+            const [vaultPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("vault"), memeIdBuffer],
+                this.program.programId
+            );
+    
+            const associatedTokenAddress = await getAssociatedTokenAddress(
+                new PublicKey(mintAddress),
+                vaultPda,
+                true // allowOwnerOffCurve
+            );
+    
+            const tokenAccount = await this.connection.getTokenAccountBalance(associatedTokenAddress);
+    
+            if (!tokenAccount.value) {
+                throw new Error('Token account not found');
+            }
+    
+            return {
+                amount: Number(tokenAccount.value.amount)
+            };
+        } catch (error) {
+            console.error('Error getting vault token account:', error);
+            throw error;
+        }
+    }
+
+    async claim(memeUuid: string, contributor: string, mintAddress: string) {
+        try {
+            const { memeId, buffer: memeIdBuffer } = uuidToMemeIdAndBuffer(memeUuid);
+            const contributorWallet = new PublicKey(contributor);
+            const mintPublicKey = new PublicKey(mintAddress);
+    
+            // Find PDAs
+            const [registryPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("registry"), Buffer.from(memeId)],
+                this.program.programId
+            );
+    
+            const [contributionPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("contribution"), memeIdBuffer, contributorWallet.toBuffer()],
+                this.program.programId
+            );
+    
+            const [vaultPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("vault"), memeIdBuffer],
+                this.program.programId
+            );
+    
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
+    
+            // Get token accounts
+            const userTokenAccount = await getAssociatedTokenAddress(
+                mintPublicKey,
+                contributorWallet
+            );
+    
+            const vaultTokenAccount = await getAssociatedTokenAddress(
+                mintPublicKey,
+                vaultPda,
+                true // allowOwnerOffCurve
+            );
+    
+            // Get the latest blockhash
+            const latestBlockhash = await this.connection.getLatestBlockhash('finalized');
+    
+            const ix = new TransactionInstruction({
+                keys: [
+                    {pubkey: registryPda, isSigner: false, isWritable: true},
+                    {pubkey: contributionPda, isSigner: false, isWritable: true},
+                    {pubkey: contributorWallet, isSigner: true, isWritable: false},
+                    {pubkey: vaultPda, isSigner: false, isWritable: false},
+                    {pubkey: vaultTokenAccount, isSigner: false, isWritable: true},
+                    {pubkey: userTokenAccount, isSigner: false, isWritable: true},
+                    {pubkey: mintPublicKey, isSigner: false, isWritable: false},
+                    {pubkey: statePDA, isSigner: false, isWritable: false},
+                    {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
+                    {pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
+                    {pubkey: web3.SystemProgram.programId, isSigner: false, isWritable: false},
+                ],
+                programId: this.program.programId,
+                data: this.program.coder.instruction.encode("claimTokens", {memeId})
+            });
+    
+            const tx = new Transaction();
+            tx.add(ix);
+            tx.recentBlockhash = latestBlockhash.blockhash;
+            tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
+            tx.feePayer = contributorWallet;
+    
+            return {
+                tx,
+                serializedTransaction: tx.serialize({ requireAllSignatures: false }).toString('base64'),
+                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+            };
+        } catch (error) {
+            console.error('Error claiming tokens:', error);
+            throw error;
+        }
+    }
+
+
+
+
 
 }

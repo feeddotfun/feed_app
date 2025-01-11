@@ -24,6 +24,16 @@ const MemeContributionSchema = createSchema<IMemeContribution>({
         type: Number,
         required: true,
     },
+    isTokensClaimed: {
+        type: Boolean,
+        default: false
+    },
+    claimAt: {
+        type: Date,
+    },
+    claimSignature: {
+        type: String,
+    }
 }, {
     timestamps: true
 })

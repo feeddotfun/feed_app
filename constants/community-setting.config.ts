@@ -25,6 +25,17 @@ export const SETTINGS_CONFIG = {
       label: `${value} SOL`
     }))
   },
+  tokenClaimDelay: {
+    title: "Token Claim Delay",
+    description: "Set the waiting period before tokens can be claimed",
+    category: "investment",
+    iconType: "timer",
+    format: formatMinutes,
+    options: [15, 30, 45, 90].map(min => ({
+      value: min * 60 * 1000,
+      label: `${min} minutes`
+    }))
+  },
   votingTimeLimit: {
     title: "Voting Time Limit",
     description: "Set how long voting periods should last",

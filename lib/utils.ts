@@ -1,8 +1,11 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./database/types";
-import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
+import { AINewsLabItem, IInvestment, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 import BN from "bn.js";
+import { formatDistanceToNow } from "date-fns";
+
+const TOKEN_DECIMALS = 6;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -28,6 +31,7 @@ export const formatPhaseString = (status: string) => {
       return 'Unknown';
   }
 }
+
 
 export function convertLamportsToSol(lamports: number): number {
   const LAMPORTS_PER_SOL = 1_000_000_000;
@@ -103,6 +107,34 @@ export const transformNewsItems = (items: IMemeNews[]): AINewsLabItem[] => {
   return items.map(transformNewsItem);
 };
 
+export const transformInvestment = (contribution: any) => ({
+  id: contribution._id.toString(),
+  amount: contribution.amount,
+  createdAt: contribution.createdAt,
+  status: contribution.session?.status || 'Contributing',
+  tokenMintAddress: contribution.session?.tokenMintAddress,
+  claimAvailableTime: contribution.session?.claimAvailableTime,
+  isTokensClaimed: contribution.isTokensClaimed,
+  estimatedTokens: calculateUserTokens(
+    contribution.amount, 
+    contribution.session.totalContributions,
+    contribution.session.initialVaultTokens
+  ),
+  meme: {
+    id: contribution.meme._id.toString(),
+    name: contribution.meme.name,
+    image: contribution.meme.image,
+    ticker: contribution.meme.ticker,
+    description: contribution.meme.description || '',
+    memeProgramId: contribution.meme.memeProgramId
+  },
+  session: {
+    totalFunds: contribution.session.totalContributions,
+    status: contribution.session.status,
+    claimAvailableTime: contribution.session.claimAvailableTime
+  }
+});
+
 export function getIpAddress(req: Request): string {
   // Vercel-specific headers
   const forwarded = req.headers.get('x-forwarded-for');
@@ -127,6 +159,18 @@ export function getIpAddress(req: Request): string {
   return 'unknown';
 }
 
+export const formatCreatedTime = (date: string) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true })
+    .replace('about ', '')
+    .replace(' ago', '')
+    .replace(' days', 'd')
+    .replace(' day', 'd')
+    .replace(' hours', 'h')
+    .replace(' hour', 'h')
+    .replace(' minutes', 'm')
+    .replace(' minute', 'm');
+};
+
 
 // Solana Program Utils
 export function uuidToMemeIdAndBuffer(uuid: string): { memeId: number[], buffer: Buffer } {
@@ -142,4 +186,61 @@ export const calculateWithSlippageBuy = (
 ): BN => {
   const slippage = amount.mul(basisPoints).div(new BN(10000));
   return amount.add(slippage);
+};
+
+export const calculateUserTokens = (
+  contributionAmount: number,
+  totalContributions: number,
+  initialVaultTokens: number
+): number => {
+  if (!totalContributions || !initialVaultTokens) return 0;
+  
+  try {
+    const adjustedVaultTokens = initialVaultTokens / Math.pow(10, TOKEN_DECIMALS);
+
+    const userTokenAmount = (contributionAmount / totalContributions) * adjustedVaultTokens;
+    return Math.floor(userTokenAmount);
+  } catch (error) {
+    console.error('Error calculating user tokens:', error);
+    return 0;
+  }
+};
+
+const formatCompactNumber = (number: number): string => {
+  try {
+    if (number === 0) return '0';
+    
+    const absNum = Math.abs(number);
+    
+    if (absNum >= 1000000) {
+      return (number / 1000000).toFixed(1) + 'M';
+    }
+    
+    if (absNum >= 1000) {
+      return (number / 1000).toFixed(1) + 'K';
+    }
+    
+    return number.toString();
+  } catch (error) {
+    console.error('Error formatting number:', error);
+    return number.toString();
+  }
+}
+
+export const formatTokenAmount = (amount: number, showDecimals: boolean = true): string => {
+  try {
+    if (!amount) return '0';
+    
+    const formatted = formatCompactNumber(amount);
+    
+    if (!showDecimals && /[KMB]$/.test(formatted)) {
+      const numPart = parseFloat(formatted);
+      return Math.floor(numPart) + formatted.slice(-1);
+    }
+    
+    return formatted;
+  } catch (error) {
+    console.error('Error formatting token amount:', error);
+    return amount.toString();
+  }
 };

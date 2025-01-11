@@ -50,6 +50,13 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument>({
         default: 1,
         min: 0.5,
         options: [0.5, 1, 1.5, 2]
+      },
+      tokenClaimDelay: {
+        type: Number,
+        default: 15 * 60 * 1000, // 15 minutes 
+        min: 15 * 60 * 1000,
+        max: 90 * 60 * 1000,
+        options: [15, 30, 45, 90].map(min => min * 60 * 1000)
       }
 }, { timestamps: true })
 

@@ -41,4 +41,27 @@ export async function memeContribute(
           console.error('Contribute action error:', error);
           throw new Error(error instanceof Error ? error.message : 'Transaction creation failed');
       }
+}
+
+export async function memeClaim(
+    memeUuid: string,
+    contributor: string,
+    mintAddress: string
+  ) {
+    try {
+      const sdk = new MemeFundSDK();
+      const {tx, serializedTransaction, lastValidBlockHeight} = await sdk.claim(memeUuid, contributor, mintAddress);
+  
+      if (!tx) {
+        throw new Error('Failed to create claim transaction');
+      }
+
+      return {
+        serializedTransaction,
+        lastValidBlockHeight
+      };
+    } catch (error) {
+      console.error('Claim action error:', error);
+      throw error;
+    }
   }

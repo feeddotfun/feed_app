@@ -1,6 +1,8 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "./ui/separator";
+import { motion } from "framer-motion";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 export const MemeCardSkeleton = () => {
   return (
@@ -300,6 +302,176 @@ export const DashboardSkeleton = () => {
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+export const WinningMemesSkeleton = () => {
+  return (
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-primary/20 rounded-full animate-pulse" />
+          <div className="h-8 w-40 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="w-[180px] h-10 bg-[#141716] rounded animate-pulse" />
+      </div>
+
+      <Separator />
+
+      {/* Grid of Meme Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <Card key={index} className="group relative bg-[#141716]/50 backdrop-blur-sm border-0 overflow-hidden">
+            {/* Winner Badge Skeleton */}
+            <div className="absolute top-2 left-2 z-10 bg-amber-500/90 h-5 w-20 rounded-full animate-pulse" />
+
+            {/* Image Container */}
+            <div className="relative w-full aspect-video bg-muted overflow-hidden">
+              <div className="absolute inset-0 bg-muted/60 animate-pulse" />
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-3">
+              {/* Title and Ticker */}
+              <div className="flex justify-between items-start gap-2">
+                <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-6 w-20 bg-[#99FF19]/10 rounded animate-pulse" />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+              </div>
+
+              {/* Mint Address */}
+              <div className="pt-2 pb-1 border-t border-white/10">
+                <div className="h-8 w-full bg-muted rounded animate-pulse" />
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 pt-2 border-t border-white/10">
+                {['Market Cap', 'Votes', 'Created'].map((_, i) => (
+                  <div key={i}>
+                    <div className="h-4 w-20 bg-muted/40 rounded mb-1 animate-pulse" />
+                    <div className="h-5 w-16 bg-muted/90 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Load More Button */}
+      <div className="flex justify-center mt-8">
+        <div className="h-11 w-[200px] bg-muted/20 rounded animate-pulse" />
+      </div>
+    </div>
+  );
+};
+
+export const InvestmentCardSkeleton = () => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      layout
+    >
+      <Card className="group relative bg-[#141716]/50 backdrop-blur-sm border-0 overflow-hidden">
+        {/* Image Skeleton */}
+        <div className="relative w-full aspect-video bg-muted/20 overflow-hidden">
+          <div className="absolute inset-0 animate-pulse bg-muted/10" />
+        </div>
+
+        <div className="p-4 space-y-3">
+          {/* Title and Ticker Skeleton */}
+          <div className="flex justify-between items-start gap-2">
+            <div className="h-7 w-48 bg-muted/10 rounded animate-pulse" />
+            <div className="h-6 w-20 bg-[#99FF19]/5 rounded animate-pulse" />
+          </div>
+
+          {/* Description Skeleton */}
+          <div className="space-y-2">
+            <div className="h-4 w-full bg-muted/10 rounded animate-pulse" />
+            <div className="h-4 w-3/4 bg-muted/10 rounded animate-pulse" />
+          </div>
+
+          {/* Market Cap Box Skeleton */}
+          <div className="flex items-center justify-between bg-white/5 rounded-lg p-3">
+            <div className="h-5 w-24 bg-muted/10 rounded animate-pulse" />
+            <div className="h-5 w-24 bg-[#99FF19]/5 rounded animate-pulse" />
+          </div>
+
+          {/* Stats Grid Skeleton */}
+          <div className="grid grid-cols-3 gap-4">
+            {[...Array(3)].map((_, index) => (
+              <div key={index}>
+                <div className="h-4 w-16 bg-muted/10 rounded mb-1.5 animate-pulse" />
+                <div className="h-5 w-20 bg-muted/10 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+
+          {/* Token Address Skeleton */}
+          <div className="pt-2 pb-1 border-t border-white/10">
+            <div className="h-8 w-full bg-muted/10 rounded animate-pulse" />
+          </div>
+
+          {/* Button/Status Skeleton */}
+          <div className="pt-3">
+            <div className="h-10 w-full bg-[#99FF19]/5 rounded animate-pulse" />
+          </div>
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
+
+export const ConnectWalletMessage = () => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center justify-center min-h-[400px] gap-4"
+    >
+      <h1 className="text-2xl font-bold">My Investments</h1>
+      <p className="text-muted-foreground mb-4">Connect your wallet to see your investments</p>
+      <WalletMultiButton />
+    </motion.div>
+  );
+};
+
+export const InvestmentsPageSkeleton = () => {
+  return (
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-[#99FF19]/20 rounded animate-pulse" />
+          <div className="h-8 w-40 bg-muted/10 rounded animate-pulse" />
+        </div>
+        
+        <div className="w-[180px] h-10 bg-[#141716] rounded animate-pulse" />
+      </div>
+
+      <Separator className="bg-white/10" />
+
+      {/* Grid of Investment Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <InvestmentCardSkeleton key={index} />
+        ))}
+      </div>
+
+      {/* Load More Button Skeleton */}
+      <div className="flex justify-center pt-4">
+        <div className="h-10 w-32 bg-[#99FF19]/10 rounded animate-pulse" />
       </div>
     </div>
   );

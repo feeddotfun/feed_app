@@ -8,7 +8,6 @@ export default async function WinningMemes() {
   const queryClient = new QueryClient();
   const queryKeys = new QueryKeys('winningMemes');
 
-  const initialData = await getWinningMemes(1);
   await queryClient.prefetchInfiniteQuery({
     queryKey: [...queryKeys.all(), 'infinite'],
     queryFn: ({ pageParam = 1 }) => getWinningMemes(pageParam),

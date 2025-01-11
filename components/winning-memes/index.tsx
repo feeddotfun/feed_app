@@ -6,6 +6,7 @@ import { Trophy, Loader2 } from "lucide-react";
 import { useWinningMemes } from '@/lib/query/winning-memes/hooks';
 import MemeCard from './meme-card';
 import { Separator } from '../ui/separator';
+import { WinningMemesSkeleton } from '../skeletons';
 
 const WinningMemesPage = () => {
   const [sortBy, setSortBy] = useState('votes');
@@ -17,6 +18,10 @@ const WinningMemesPage = () => {
     hasNextPage, 
     isFetchingNextPage 
   } = useWinningMemes();
+
+  if (isLoading) {
+    return <WinningMemesSkeleton />;
+  }
 
   const sortedMemes = useMemo(() => {
     if (!memes) return [];
@@ -35,9 +40,7 @@ const WinningMemesPage = () => {
     });
   }, [memes, sortBy]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+
 
   if (isError) {
     return <div>Error loading winning memes</div>;

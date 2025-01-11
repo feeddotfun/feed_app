@@ -43,10 +43,15 @@ const MemeArenaSessionSchema = new Schema({
     contributeEndTime: {
         type: Date,
     },
+    claimAvailableTime: {
+        type: Number
+    },
+    initialVaultTokens: { type: Number, default: 0},
     totalContributions: { type: Number, default: 0 },
     contributorCount: { type: Number, default: 0},
     tokenMintAddress: { type: String },
     tx: { type: String },
+
 }, { 
     timestamps: true
  })

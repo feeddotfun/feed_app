@@ -1,7 +1,12 @@
+'use client'
+
+import PageContainer from "@/components/layout/page-container";
+import MyInvestmentsPage from "@/components/my-investments";
+
 export default function Page() {
-    return (
-        <div>
-            My Investments
-        </div>
-    )
+  return(
+    <PageContainer scrollable={true}>
+      <MyInvestmentsPage/>
+    </PageContainer>
+  )
 }

@@ -16,7 +16,6 @@ const useDashboardQuery = createGenericQuery<
 export const useDashboard = () => {
   const { useGetAll } = useDashboardQuery();
   const { data, isLoading, isError, error} = useGetAll();
-  console.log(data)
   return {
     isLoading: !data || isLoading,
     isError: isError,

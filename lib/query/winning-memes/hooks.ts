@@ -16,28 +16,20 @@ const useWinningMemesQuery = createGenericQuery<
 
 export const useWinningMemes = () => {
   const { useInfiniteItems } = useWinningMemesQuery();
+  const query = useInfiniteItems();
   
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-    error
-  } = useInfiniteItems();
-
   const memes = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.items);
-  }, [data]);
+    if (!query.data?.pages) return [];
+    return query.data.pages.flatMap(page => page.items);
+  }, [query.data]);
 
   return {
     memes,
-    isLoading: status === 'pending',
-    isError: status === 'error',
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
+    isLoading: !query.data || query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage
   };
 };

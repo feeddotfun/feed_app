@@ -14,10 +14,13 @@ export interface BaseResponse<T> {
 export interface InfiniteQueryParams {
   page?: number;
   limit?: number;
+  [key: string]: any;
 }
   
 export interface QueryConfig {
-    staleTime?: number;
+  staleTime?: number;
+  enabled?: boolean;
+  params?: any;
 }
 
 export interface BaseSSEEvent<T> {
