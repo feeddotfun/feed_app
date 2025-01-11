@@ -34,22 +34,6 @@ export class NewsLabService {
     }
     return NewsLabService.instance;
   }
-
-  // Fetch latest news from API
-  private async fetchLatestNews(): Promise<NewsItem[]> {
-    try {
-      const response = await fetch(`${this.API_BASE_URL}/api/v1/news`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch news: ${response.statusText}`);
-      }
-      const news: NewsItem[] = await response.json();
-      return news;
-    } catch (error) {
-      console.error('Error fetching news:', error);
-      throw new Error('Failed to fetch news from API');
-    }
-  }
-
   // Fetch memes for all news items at once
   private async fetchMemesForNews(): Promise<MemeResponse[]> {
     try {
@@ -134,7 +118,7 @@ export class NewsLabService {
         success: true,
         processedCount,
         totalFetched: apiMemes.length,
-        newContent: newMemes.length
+        newContent: newMemes.length,
       };
     } catch (error) {
       console.error('Error in checkAndProcessNewContent:', error);

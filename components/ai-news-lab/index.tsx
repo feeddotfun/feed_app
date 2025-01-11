@@ -67,11 +67,11 @@ export default function NewsLabContent() {
             {memes && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                Arena Slots: {memes.length}/{session.maxMemes}
+                {memes.length}/{session.maxMemes}
               </Badge>
             )}
             <Badge variant="secondary" className="bg-primary/10 text-primary">
-              Updates every 30 min
+              T30
             </Badge>
           </div>
         </div>

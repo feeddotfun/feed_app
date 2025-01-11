@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { transformNewsItems } from "../utils";
 import { IMemeNews } from "../database/types";
 
+
 // Get all available news memes
 export async function getAvailableNewsMemes() {
   await connectToDatabase();
