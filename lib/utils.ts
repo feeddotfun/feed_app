@@ -25,6 +25,8 @@ export const formatPhaseString = (status: string) => {
       return 'Final Voting';
     case 'Contributing':
       return 'Contributing';
+    case 'TokenCreating':
+      return 'Token Creating'
     case 'Completed':
       return 'Completed';
     default:

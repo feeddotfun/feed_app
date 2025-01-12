@@ -1,6 +1,6 @@
 import { BaseEntity } from "./base.types";
 
-export type SessionStatus = 'Voting' | 'LastVoting' | 'Contributing' | 'Completed';
+export type SessionStatus = 'Voting' | 'LastVoting' | 'Contributing' | 'TokenCreating' | 'Completed';
 
 export interface MemeData extends BaseEntity {
     name: string;
@@ -31,6 +31,7 @@ export interface MemeArenaSessionData extends BaseEntity {
     contributorCount: number;
     tokenMintAddress?: string;   
     tx?: string; 
+    isTokenCreating?: boolean;
 }
 
 export interface MemeArenaData extends BaseEntity {

@@ -43,6 +43,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
       case 'voting-threshold-reached':
       case 'contributing-started':
       case 'new-contribution':
+      case 'token-creation-started':
       case 'contributing-ended':
         handleMemeArenaEvents(parsedData, queryClient);
         break;

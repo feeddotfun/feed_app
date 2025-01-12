@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Transaction, Connection, LAMPORTS_PER_SOL, TransactionInstruction, PublicKey } from '@solana/web3.js'
 import confetti from 'canvas-confetti'
 import BN from 'bn.js'
-import { MemeData, MemeArenaSessionData, ContributeMemeParams } from "@/types"
+import { MemeData, MemeArenaSessionData } from "@/types"
 import { createMemeContribution } from '@/lib/actions/meme-arena.action'
 
 const MAX_CONTRIBUTION_SOL = 1;
@@ -19,13 +19,40 @@ export function useWinnerMeme(
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
   const [purchaseAmount, setPurchaseAmount] = useState("")
   const [isContributing, setIsContributing] = useState(false)
-  const [isTokenCreation, setIsTokenCreation] = useState(false)
   const [isEligible, setIsEligible] = useState<boolean | null>(true)
-  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL!, 'confirmed')
 
+  // Winner visibility and confetti effect
+  useEffect(() => {
+    if (meme.isWinner && !isVisible) {
+      setIsVisible(true)
+      launchConfetti()
+    }
+  }, [meme.isWinner, isVisible])
+
+  // Time remaining calculation
+  useEffect(() => {
+    const updateRemainingTime = () => {
+      if (session.contributeEndTime) {
+        const endTime = new Date(session.contributeEndTime).getTime()
+        const now = Date.now()
+        const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
+        setRemainingTime(remaining)
+      } else {
+        setRemainingTime(null)
+      }
+    }
+
+    updateRemainingTime()
+    const timer = setInterval(updateRemainingTime, 1000)
+
+    return () => clearInterval(timer)
+  }, [session.contributeEndTime])
+
+  // Eligibility check
   const checkEligibility = useCallback(async () => {
     setEligibilityError(null);
 
@@ -70,38 +97,7 @@ export function useWinnerMeme(
     checkEligibility();
   }, [checkEligibility]);
 
-  useEffect(() => {
-    if (meme.isWinner) {
-      setIsVisible(true)
-      launchConfetti()
-    }
-  }, [meme.isWinner])
-
-  useEffect(() => {
-    const updateRemainingTime = () => {
-      if (session.contributeEndTime) {
-        const endTime = new Date(session.contributeEndTime).getTime()
-        const now = Date.now()
-        const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
-        setRemainingTime(remaining)
-
-        if (remaining <= 0 && session.status === 'Contributing') {
-          setIsTokenCreation(true)
-          setTimeout(() => {
-            setIsTokenCreation(false)
-          }, 5000)
-        }
-      } else {
-        setRemainingTime(null)
-      }
-    }
-
-    updateRemainingTime()
-    const timer = setInterval(updateRemainingTime, 1000)
-
-    return () => clearInterval(timer)
-  }, [session.contributeEndTime, session.status])
-
+  // Utility functions
   const launchConfetti = () => {
     confetti({
       particleCount: 100,
@@ -109,12 +105,6 @@ export function useWinnerMeme(
       origin: { y: 0.6 }
     })
   }
-
-  const copyToClipboard = useCallback(() => {
-    if (session.tokenMintAddress) {
-      navigator.clipboard.writeText(session.tokenMintAddress)
-    }
-  }, [session.tokenMintAddress])
 
   const setPurchaseAmountWithLimit = useCallback((amount: string) => {
     const numericAmount = parseFloat(amount);
@@ -132,35 +122,23 @@ export function useWinnerMeme(
       return data.ip;
     } catch (error) {
       console.error('Failed to get IP:', error);
-      // Fallback IP for local development
       return process.env.NODE_ENV === 'development' ? '127.0.0.1' : 'unknown';
     }
   };
 
+  // Contribution handler
   const handleContribute = useCallback(async () => {
-    if (!publicKey || !signTransaction || !isEligible) {
-      return;
-    }
-
-    if (!purchaseAmount || isNaN(parseFloat(purchaseAmount))) {
+    if (!publicKey || !signTransaction || !isEligible || !purchaseAmount || isNaN(parseFloat(purchaseAmount))) {
       return;
     }
 
     setIsContributing(true);
     let retries = 0;
 
-    while (retries < MAX_RETRIES) { 
+    while (retries < MAX_RETRIES) {
       try {
-        
-        // Amount validation and conversion
-        const contributionAmount = Math.min(
-          parseFloat(purchaseAmount), 
-          MAX_CONTRIBUTION_SOL
-        );
-
-        const lamports = new BN(
-          Math.floor(contributionAmount * LAMPORTS_PER_SOL)
-        );
+        const contributionAmount = Math.min(parseFloat(purchaseAmount), MAX_CONTRIBUTION_SOL);
+        const lamports = new BN(Math.floor(contributionAmount * LAMPORTS_PER_SOL));
 
         // Get transaction from API
         const contributeResponse = await fetch('/api/meme-arena/contribute', {
@@ -225,14 +203,12 @@ export function useWinnerMeme(
           lastValidBlockHeight
         }, 'confirmed');
 
-
         if (confirmation.value.err) {
           throw new Error(`Transaction failed: ${confirmation.value.err}`);
         }
 
-        // Get client IP
+        // Get client IP and create contribution record
         const contributorIp = await getClientIp();
-
         await createMemeContribution({
           meme: meme.id,
           session: session.id,
@@ -241,6 +217,7 @@ export function useWinnerMeme(
           amount: lamports.toNumber()
         });
 
+        setPurchaseAmount(''); // Reset purchase amount after successful contribution
         setIsContributing(false);
         await checkEligibility();
         break;
@@ -251,36 +228,31 @@ export function useWinnerMeme(
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
           continue;
         }
-        
         console.error('Contribution error:', error);
         setIsContributing(false);
         throw error;
       }
     }
-
-    setIsContributing(false);
-
-}, [
-  meme, 
-  publicKey, 
-  purchaseAmount, 
-  session.id, 
-  signTransaction, 
-  connection, 
-  isEligible, 
-  checkEligibility
-]);
+  }, [
+    meme, 
+    publicKey, 
+    purchaseAmount, 
+    session.id, 
+    signTransaction, 
+    connection, 
+    isEligible, 
+    checkEligibility
+  ]);
 
   return {
     isVisible,
     remainingTime,
     purchaseAmount,
     setPurchaseAmount: setPurchaseAmountWithLimit,
-    isTokenCreation,
+    isTokenCreation: session.isTokenCreating,
     isEligible,
     eligibilityError,
     handleContribute,
-    copyToClipboard,
     MAX_CONTRIBUTION_SOL,
     isContributing
   }

@@ -262,7 +262,6 @@ export async function startLastVotingOnSession(sessionId: string) {
       { session }
     );
 
-    console.log(winnerMeme.memeProgramId)
     // Create meme registry on program
     const sdk = new MemeFundSDK();
     console.log('sdk')
@@ -413,10 +412,14 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     dbSession.startTransaction();
 
     const session = await MemeArenaSession.findById({ _id: sessionId }).session(dbSession);
-    console.log(session)
     if (!session || session.status !== 'Contributing') {
       throw new Error('Invalid session status');
     }
+
+    sendUpdate('token-creation-started', {
+      session: transformSession(session),
+      timestamp: new Date()
+    });
 
     const winner = await Meme.findById(session.winnerMeme).lean();
     if (!winner) {
@@ -441,8 +444,6 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     );
 
     if (!tokenResult.success) {
-      console.log(tokenResult.tx)
-      console.log(tokenResult.error)
       throw new Error(`Token creation failed: ${tokenResult.error}`);
     }
     

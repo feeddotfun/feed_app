@@ -208,7 +208,7 @@ const AirdropStats = () => {
                             <div className="text-3xl font-bold flex items-center gap-2">
                               <span>{stats.activities.contributions.count}</span>
                               <div className="text-base text-muted-foreground flex items-center gap-1">
-                                ({stats.activities.contributions.totalSol} SOL
+                                ({stats.activities.contributions.totalSol.toFixed(2)} SOL
                                 <SolIcon className="w-4 h-4" />)
                               </div>
                             </div>

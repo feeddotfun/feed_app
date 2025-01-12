@@ -6,7 +6,6 @@ const queryKeys = new QueryKeys('memeArena');
 
 export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
   try {     
-
     switch (data.type) {
       case 'new-meme':
         queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
@@ -53,23 +52,23 @@ export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
         break;
         
       case 'voting-threshold-reached':
-          queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
-            if (!old?.items[0]) return old;
-            
-            return {
-              ...old,
-              items: [{
-                ...old.items[0],
-                session: {
-                  ...old.items[0].session,
-                  status: 'LastVoting',
-                  votingEndTime: data.votingEndTime
-                },
-                memes: data.memes || old.items[0].memes
-              }]
-            };
-          });
-          break;
+        queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
+          if (!old?.items[0]) return old;
+          
+          return {
+            ...old,
+            items: [{
+              ...old.items[0],
+              session: {
+                ...old.items[0].session,
+                status: 'LastVoting',
+                votingEndTime: data.votingEndTime
+              },
+              memes: data.memes || old.items[0].memes
+            }]
+          };
+        });
+        break;
 
       case 'contributing-started':
         queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
@@ -92,31 +91,51 @@ export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
                 nextSessionStartTime: data.session.nextSessionStartTime,
                 totalContributions: 0
               },
-              memes: [winnerMeme] // Only keep the winner meme
+              memes: [winnerMeme]
+            }]
+          };
+        });
+        break;
+
+      case 'token-creation-started':
+        queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
+          if (!old?.items[0]) return old;
+
+          const winnerMeme = {
+            ...data.meme,
+            isWinner: true
+          };
+          
+          return {
+            ...old,
+            items: [{
+              ...old.items[0],
+              session: {
+                ...old.items[0].session,
+                status: 'TokenCreating',
+                winnerMeme: winnerMeme.id
+              }
             }]
           };
         });
         break;
 
       case 'new-contribution':
-          queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
-            if (!old?.items[0]) {
-              return old;
-            }        
-            const updatedData = {
-              ...old,
-              items: [{
-                ...old.items[0],
-                session: {
-                  ...old.items[0].session,
-                  totalContributions: data.session.totalContributions,
-                  contributorCount: data.session.contributorCount
-                }
-              }]
-            };
-            return updatedData;
-          });
-          break;
+        queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
+          if (!old?.items[0]) return old;        
+          return {
+            ...old,
+            items: [{
+              ...old.items[0],
+              session: {
+                ...old.items[0].session,
+                totalContributions: data.session.totalContributions,
+                contributorCount: data.session.contributorCount
+              }
+            }]
+          };
+        });
+        break;
 
       case 'contributing-ended':
         queryClient.setQueryData<BaseResponse<MemeArenaData>>(queryKeys.all(), (old) => {
@@ -131,7 +150,7 @@ export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
                 ...data.session,
                 status: 'Completed',
                 nextSessionStartTime: data.session.nextSessionStartTime,
-                winnerMeme: winnerMeme?.id
+                winnerMeme: winnerMeme?.id,
               },
               memes: winnerMeme ? [winnerMeme] : []
             }]

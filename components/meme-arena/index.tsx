@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import AddMeme from "./add-meme";
 import { useSessionTimer } from "@/hooks/use-session-timer";
 import WinnerMeme from "./winner-meme";
+import { TokenCreation } from "./token-creation";
 
 interface MemeArenaProps {
   systemConfig: SystemConfig;
@@ -49,7 +50,7 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
     }
   
     const winner = memes.find(meme => meme.isWinner);
-    const isContributingPhase = ['Contributing', 'Completed'].includes(session.status);
+    const isContributingPhase = ['Contributing', 'Completed', 'TokenCreating'].includes(session.status);
     const isCompletedWithNextSession = session.status === 'Completed' && session.nextSessionStartTime;
     
     const shouldShowAddMeme = session.status === 'Voting' && (!memes || memes.length < session.maxMemes);
@@ -119,6 +120,8 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
     }
 
   }, [session?.id, createMeme]) 
+
+    
   
   return (
     <div className="py-4 space-y-6">
@@ -146,7 +149,9 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
         </div>
 
         <Separator className="shadow mb-6"/>
-
+        
+        {session.status === 'TokenCreating' && <TokenCreation/>}
+        
         {winnerMeme && ['Contributing', 'Completed'].includes(session.status) && (
           <WinnerMeme
             meme={winnerMeme}

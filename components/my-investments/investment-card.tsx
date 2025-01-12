@@ -77,7 +77,7 @@ export const InvestmentCard = ({ investment, onClaim, isClaimLoading, currentInv
               <TrendingUp className="w-4 h-4 text-[#99FF19]" />
               <span className="text-sm text-white/60">Market Cap:</span>
             </div>
-            <span className="font-medium text-[#99FF19]">$1,234,567</span>
+            <span className="font-medium text-[#99FF19]">-</span>
           </div>
 
           <div className="grid grid-cols-3 gap-4">

@@ -63,7 +63,7 @@ export default function WinnerMeme({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center pt-4 sm:pt-6 px-2 sm:px-4">
-            {isTokenCreation ? (
+            {session.status === 'TokenCreating' ? (
               <TokenCreation />
             ) : (
               <>

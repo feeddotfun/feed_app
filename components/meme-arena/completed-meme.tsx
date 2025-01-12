@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MemeArenaSessionData } from "@/types";
 import { IconCopy } from '@tabler/icons-react';
+import { CopyAddress } from '../ui/copy-address';
 
 interface CompletedMemeProps {
   session: MemeArenaSessionData;
@@ -51,25 +52,7 @@ export const CompletedMeme: React.FC<CompletedMemeProps> = ({ session }) => {
               <span className="text-sm text-muted-foreground">Token Mint Address</span>
               <Badge variant="outline" className="text-xs">Verified ✓</Badge>
             </div>
-            <div className={`
-              flex items-center w-full rounded-md p-2 border bg-background/50
-              transition-all duration-300 ${copied ? 'border-green-500' : 'border-border'}
-            `}>
-              <input 
-                type="text" 
-                value={session.tokenMintAddress} 
-                readOnly 
-                className="bg-transparent text-sm flex-grow font-mono px-2 focus:outline-none overflow-hidden text-ellipsis"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={copyToClipboard}
-                className="ml-2 h-8 w-8"
-              >
-                <IconCopy size={16} className={`transition-colors duration-300 ${copied ? 'text-green-500' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`} />
-              </Button>
-            </div>
+            <CopyAddress id={session.id} address={session.tokenMintAddress!} isCompact/>
           </div>
 
           {/* Transaction Hash */}
