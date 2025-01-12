@@ -4,7 +4,6 @@ import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./databa
 import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 import BN from "bn.js";
 import { formatDistanceToNow } from "date-fns";
-import SSEManager from "./sse/sse-manager";
 
 const TOKEN_DECIMALS = 6;
 
@@ -13,8 +12,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function sendUpdate(type: string, data: Record<string, any>) {
-  const sseManager = SSEManager.getInstance();
-  return sseManager.broadcast(type, data);
+  return fetch('/api/broadcast', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ type, data })
+  });
 }
 
 export const formatTime = (time: number): string => {
