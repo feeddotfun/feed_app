@@ -568,3 +568,25 @@ export async function getWithSessionContributions(sessionId: string) {
     totalAmount
   };
 }
+
+// ** Get Meme Vote Details
+export async function getMemeVoteDetails(memeId: string, sessionId: string) {
+  await connectToDatabase();
+  
+  // Session validation
+  const session = await MemeArenaSession.findById(sessionId);
+  if (!session || !['Voting', 'LastVoting'].includes(session.status)) {
+    throw new Error('Voting is not active for this session');
+  }
+
+  // Meme validation
+  const meme = await Meme.findById(memeId);
+  if (!meme) {
+    throw new Error('Meme not found');
+  }
+
+  return {
+    meme,
+    session
+  };
+}

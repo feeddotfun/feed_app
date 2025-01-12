@@ -30,11 +30,20 @@ export default function MemeCard({
 
   const handleShare = async () => {
     try {
-      await navigator.share({
-        title: meme.name,
-        text: meme.description,
-        url: window.location.href,
-      });
+      const shareUrl = `${window.location.origin}/api/meme-arena/share?memeId=${meme.id}&sessionId=${meme.session}`; 
+
+      const actionUrl = `solana-action:${shareUrl}`;
+  
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(actionUrl);
+      } else {
+        const tempInput = document.createElement('input');
+        tempInput.value = actionUrl;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
     } catch (error) {
       console.error('Error sharing:', error);
     }

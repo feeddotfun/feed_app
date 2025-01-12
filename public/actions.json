@@ -1,8 +1,8 @@
 {
     "rules": [
       {
-        "pathPattern": "/api/share/vote",
-        "apiPath": "/api/share/vote"
+        "pathPattern": "/api/meme-arena/share",
+        "apiPath": "/api/meme-arena/share"
       }
     ]
   }
