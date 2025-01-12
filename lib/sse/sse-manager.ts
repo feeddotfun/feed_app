@@ -20,23 +20,28 @@ type ClientStatus = {
 type BroadcastData = Record<string, any>;
 
 class SSEManager {
+  private static instance: SSEManager;
   private clients: Map<string, Client>;
-  private cleanupInterval: NodeJS.Timer;
 
   protected constructor() {
     this.clients = new Map();
-    this.cleanupInterval = setInterval(() => this.cleanupInactiveClients(), 60000);
-  }
-
-  public static createInstance(): SSEManager {
-    return new SSEManager();
+    const intervalFunc = typeof self !== 'undefined' ? self.setInterval : setInterval;
+    intervalFunc(() => this.cleanupInactiveClients(), 60000);
   }
 
   public static getInstance(): SSEManager {
-    if (!global.sseManager) {
-      global.sseManager = SSEManager.createInstance();
+    if (process.env.NODE_ENV === 'development') {
+      if (!global.sseManager) {
+        global.sseManager = new SSEManager();
+      }
+      return global.sseManager;
     }
-    return global.sseManager;
+
+    // Production mode (Edge)
+    if (!SSEManager.instance) {
+      SSEManager.instance = new SSEManager();
+    }
+    return SSEManager.instance;
   }
 
   private async testClient(client: Client): Promise<boolean> {
@@ -105,30 +110,25 @@ class SSEManager {
     const encodedMessage = encoder.encode(message);
     
 
-    const broadcastPromises: Promise<void>[] = [];
-
-    this.clients.forEach((client) => {
-      broadcastPromises.push(
-        new Promise<void>((resolve) => {
-          try {
-            if (!client.isActive) {
-              this.removeClient(client.id);
-              resolve();
-              return;
-            }
-
-            client.controller.enqueue(encodedMessage);
-            client.lastActivity = Date.now();
-            resolve();
-          } catch {
+    const promises = Array.from(this.clients.values()).map(client => 
+      new Promise<void>(resolve => {
+        try {
+          if (!client.isActive) {
             this.removeClient(client.id);
             resolve();
+            return;
           }
-        })
-      );
-    });
+          client.controller.enqueue(encodedMessage);
+          client.lastActivity = Date.now();
+          resolve();
+        } catch {
+          this.removeClient(client.id);
+          resolve();
+        }
+      })
+    );
 
-    await Promise.all(broadcastPromises);
+    await Promise.all(promises);
   }
 
   getClientStatus(): { totalClients: number; clients: ClientStatus[] } {
@@ -142,12 +142,4 @@ class SSEManager {
     };
   }
 }
-
-// Protect against hot reload in development
-if (process.env.NODE_ENV !== 'production') {
-  if (!global.sseManager) {
-    global.sseManager = SSEManager.createInstance();
-  }
-}
-
 export default SSEManager;

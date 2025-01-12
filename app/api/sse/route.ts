@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import SSEManager from '@/lib/sse/sse-manager';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   const sseManager = SSEManager.getInstance();
 
