@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
 export function sendUpdate(type: string, data: Record<string, any>) {
   const origin = process.env.NEXT_PUBLIC_APP_URL || 
   (typeof window !== 'undefined' ? window.location.origin : '');
-
+  
   return fetch(`${origin}/api/broadcast`, {
     method: 'POST',
     headers: {
