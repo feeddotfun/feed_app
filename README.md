@@ -1,4 +1,4 @@
-# <div align="center"><img src="logo.svg" width="200" height="200" alt="feed.fun"></div>
+# <div align="center"><img src="public/logo.svg" width="200" height="200" alt="feed.fun"></div>
 
 # Feed.fun App
 
