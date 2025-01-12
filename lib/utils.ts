@@ -12,7 +12,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function sendUpdate(type: string, data: Record<string, any>) {
-  return fetch('/api/broadcast', {
+  const origin = process.env.NEXT_PUBLIC_APP_URL || 
+  (typeof window !== 'undefined' ? window.location.origin : '');
+
+  return fetch(`${origin}/api/broadcast`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
