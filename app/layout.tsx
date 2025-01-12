@@ -1,4 +1,6 @@
 export const fetchCache = 'force-no-store';
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 import type { Metadata } from 'next';
 import NextTopLoader from 'nextjs-toploader';
