@@ -39,8 +39,8 @@ export default function MyInvestmentsPage() {
         memeUuid: investment.meme.memeProgramId,
         memeId: investment.meme.id,
       });
-    } catch (error) {
-      console.error('Claim error:', error);
+    } catch {
+      throw new Error('Claim error')
     }
   };
 

@@ -31,12 +31,10 @@ export const CopyAddress: React.FC<CopyAddressProps> = ({
     if (!address) return;
 
     try {
-      // Try modern clipboard API first
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(address);
         setIsCopied(true);
       } else {
-        // Fallback for older browsers and non-HTTPS
         const textArea = document.createElement("textarea");
         textArea.value = address;
         document.body.appendChild(textArea);
@@ -44,8 +42,7 @@ export const CopyAddress: React.FC<CopyAddressProps> = ({
         try {
           document.execCommand('copy');
           setIsCopied(true);
-        } catch (err) {
-          console.error('Fallback: Oops, unable to copy', err);
+        } catch {
         }
         document.body.removeChild(textArea);
       }
@@ -54,8 +51,7 @@ export const CopyAddress: React.FC<CopyAddressProps> = ({
       setTimeout(() => {
         setIsCopied(false);
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
+    } catch  {
     }
   }, [address]);
 

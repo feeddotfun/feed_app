@@ -50,8 +50,8 @@ export const useMyInvestments = (publicKey: string, filter: FilterType = 'waitin
               }))
             };
           });
-        } catch (error) {
-          console.error('Optimistic update error:', error);
+        } catch {
+          throw new Error('Optimistic update error')
         }
   
         return { previousData };

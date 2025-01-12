@@ -1,5 +1,5 @@
 import { Progress } from "@/components/ui/progress";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface VotingProgressProps {
   endTime: string;
@@ -13,14 +13,13 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
   const [progress, setProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState('');
 
-  const calculateProgress = () => {
+  const calculateProgress = useCallback(() => {
     try {
       const start = new Date(startTime).getTime();
       const end = new Date(endTime).getTime();
       const now = Date.now();
       
       if (isNaN(start) || isNaN(end)) {
-        console.error('Invalid dates:', { startTime, endTime });
         return 0;
       }
       
@@ -29,29 +28,18 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
       
       const progress = Math.max(0, Math.min(100, (elapsed / total) * 100));
       
-      console.log('Progress calculation:', {
-        start,
-        end,
-        now,
-        total,
-        elapsed,
-        progress
-      });
-      
       return progress;
-    } catch (error) {
-      console.error('Error calculating progress:', error);
+    } catch  {
       return 0;
     }
-  };
+  }, [startTime, endTime]);
 
-  const getTimeRemaining = () => {
+  const getTimeRemaining = useCallback(() => {
     try {
       const end = new Date(endTime).getTime();
       const now = Date.now();
       
       if (isNaN(end)) {
-        console.error('Invalid end date:', endTime);
         return 'Invalid date';
       }
       
@@ -73,24 +61,19 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
       }
 
       return `Ends in ${minutes} minutes`;
-    } catch (error) {
-      console.error('Error calculating time remaining:', error);
+    } catch {
       return 'Error calculating time';
     }
-  };
+  }, [endTime]);
 
   useEffect(() => {
-    // Validate dates first
     if (!startTime || !endTime) {
-      console.error('Missing dates:', { startTime, endTime });
       return;
     }
 
     const updateValues = () => {
       const newProgress = calculateProgress();
       const newTimeRemaining = getTimeRemaining();
-      
-      console.log('Updating values:', { newProgress, newTimeRemaining });
       
       setProgress(newProgress);
       setTimeRemaining(newTimeRemaining);
@@ -103,7 +86,7 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
     const interval = setInterval(updateValues, 60000);
 
     return () => clearInterval(interval);
-  }, [endTime, startTime]);
+  }, [endTime, startTime, calculateProgress, getTimeRemaining]);
 
   return (
     <div className="flex items-center gap-4">

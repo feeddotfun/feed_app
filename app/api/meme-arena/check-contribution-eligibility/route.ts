@@ -1,7 +1,6 @@
 import { checkContributionEligibility } from '@/lib/actions/meme-arena.action'
 import { CheckContributionEligibilityParams } from '@/types';
 import { NextRequest, NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid';
 export async function POST(request: NextRequest) {
   const body: CheckContributionEligibilityParams = await request.json();
   let ip = request.headers.get("x-real-ip") || 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Timer, Wallet, Check } from "lucide-react";
+import { Clock, Timer, Wallet } from "lucide-react";
 import SolIcon from '@/components/ui/solana-icon';
 import { CommunitySettingConfig, CommunitySettingKeyType } from "@/types";
 

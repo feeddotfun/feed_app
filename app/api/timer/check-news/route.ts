@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       ...result
     });
   } catch (error) {
-    console.error('Error in checkAndProcessNewContent:', error);
     return NextResponse.json(
       { 
         success: false, 

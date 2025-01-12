@@ -8,8 +8,7 @@ interface ClaimRequestBody {
 }
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: Request
 ) {
   try {
     const body: ClaimRequestBody = await req.json();
@@ -37,7 +36,6 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('Claim API error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create transaction' }, 
       { status: 500 }

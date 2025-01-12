@@ -53,3 +53,12 @@ export interface CreateSystemSettingVoteDto {
   settingKey: string;
   selectedValue: number;
 }
+
+export interface CommunitySettingConfig {
+  title: string;
+  description: string;
+  iconType: string;
+  format: (value: number) => string;
+  category: 'investment' | 'timing';
+  options: CommunitySettingOption[];
+}

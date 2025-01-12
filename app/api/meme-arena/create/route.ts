@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createMeme } from '@/lib/actions/meme-arena.action';
 import { CreateMemeParams } from '@/types';
-import { sendUpdate } from '../../sse/route';
+import { sendUpdate } from '@/lib/utils';
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +19,6 @@ export async function POST(req: Request) {
   }
   catch (error) {
     if (error instanceof Error) {
-      console.log(error)
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to create meme' }, { status: 500 });

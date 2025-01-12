@@ -2,7 +2,6 @@ import { createGenericQuery } from '../core/use-generic-query';
 import { WinningMemesService } from './service';
 import { WinningMemeData } from '@/types';
 import { useMemo } from 'react';
-import { InfiniteData } from '@tanstack/react-query';
 
 const winningMemesService = new WinningMemesService();
 const useWinningMemesQuery = createGenericQuery<

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createMemeVote } from '@/lib/actions/meme-arena.action';
 import { VoteMemeParams } from '@/types';
-import { sendUpdate } from '../../sse/route';
+import { sendUpdate } from '@/lib/utils';
 
 export async function POST(req: Request) {
   try {

@@ -15,8 +15,7 @@ export async function GET(req: NextRequest) {
 
     const stats = await getAirdropStats(publicKey);
     return NextResponse.json(stats);
-  } catch (error) {
-    console.error('Error fetching airdrop stats:', error);
+  } catch  {
     return NextResponse.json(
       { error: 'Failed to fetch airdrop stats' },
       { status: 500 }

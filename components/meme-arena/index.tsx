@@ -39,6 +39,45 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
     isCreating,
   } = useMemeArena();
 
+  const { remainingTime, contributeEndTime, nextSessionTime } = useSessionTimer(session);
+
+  const handleVote = useCallback(async (memeId: string) => {
+    if (!session?.id) return;
+    
+    try {
+      setVotingMemeIds(prev => [...prev, memeId])
+      await vote({
+        session: session.id,
+        meme: memeId,
+        voter: uuidv4(),
+        voterIpAddress: uuidv4()
+      });
+    } catch  {
+      throw new Error('Failed to vote')
+    }
+    finally {
+      setVotingMemeIds(prev => prev.filter(id => id !== memeId));
+    }
+  }, [session?.id, vote]);
+
+  const handleCreateMeme = useCallback(async ( name: string, ticker: string, description: string, image: string) => {
+    if (!session?.id) return;
+    
+    try {
+      await createMeme({
+        session: session.id,
+        name,
+        ticker,
+        description,
+        image
+      })
+    }
+    catch {
+      throw new Error('Failed to create')
+    }
+
+  }, [session?.id, createMeme]) 
+
   const memoizedData = useMemo(() => {
     if (!session) {
       return { 
@@ -82,46 +121,8 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
   }
 
   const { shouldShowVoting, shouldShowAddMeme, winnerMeme, sortedMemes } = memoizedData;
-  const { remainingTime, contributeEndTime, nextSessionTime } = useSessionTimer(session);
 
-  const handleVote = useCallback(async (memeId: string) => {
-    if (!session?.id) return;
-    
-    try {
-      setVotingMemeIds(prev => [...prev, memeId])
-      await vote({
-        session: session.id,
-        meme: memeId,
-        voter: uuidv4(),
-        voterIpAddress: uuidv4()
-      });
-    } catch (error) {
-      console.error('Failed to vote:', error);
-    }
-    finally {
-      setVotingMemeIds(prev => prev.filter(id => id !== memeId));
-    }
-  }, [session?.id, vote]);
-
-  const handleCreateMeme = useCallback(async ( name: string, ticker: string, description: string, image: string) => {
-    if (!session?.id) return;
-    
-    try {
-      await createMeme({
-        session: session.id,
-        name,
-        ticker,
-        description,
-        image
-      })
-    }
-    catch (error) {
-      console.log('Failed to create:', error)
-    }
-
-  }, [session?.id, createMeme]) 
-
-    
+   
   
   return (
     <div className="py-4 space-y-6">

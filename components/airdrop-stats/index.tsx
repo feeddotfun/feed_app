@@ -10,7 +10,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useAirdropStats } from '@/lib/query/airdrop-stats/hooks';
 import SolIcon from '@/components/ui/solana-icon';
 import { formatNumber } from '@/lib/utils';
-import { AirdropStatsSkeleton, ConnectWalletMessage, InvestmentsPageSkeleton } from '@/components/skeletons';
+import { AirdropStatsSkeleton, ConnectWalletMessage } from '@/components/skeletons';
 
 interface ActivityCardProps {
   icon: React.ElementType;

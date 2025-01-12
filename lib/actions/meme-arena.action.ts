@@ -10,7 +10,7 @@ import SystemConfig from "../database/models/system-config.model";
 import MemeVote from "../database/models/meme-vote.model";
 
 // ** SSE & Services
-import { sendUpdate } from "@/app/api/sse/route";
+import { sendUpdate } from "@/lib/utils";
 import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
 
 // ** Utils
@@ -171,7 +171,6 @@ export async function createMemeVote(voteMemeParams: Partial<VoteMemeParams>): P
   const transformedMeme = transformMeme(updatedMeme);
 
   if (updatedMeme.totalVotes === session.votingThreshold && session.status === 'Voting') {
-    console.log('Voting threshold reached');
     await startLastVotingOnSession(session.id.toString());
   }
 
@@ -264,9 +263,7 @@ export async function startLastVotingOnSession(sessionId: string) {
 
     // Create meme registry on program
     const sdk = new MemeFundSDK();
-    console.log('sdk')
     const result = await sdk.createMemeRegistry(winnerMeme.memeProgramId);
-    console.log(result);
     if (!result.success) {
       await session.abortTransaction();
       throw new Error(`Failed to create meme registry: ${result.error}`);

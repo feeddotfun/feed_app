@@ -8,7 +8,7 @@ import {
     PublicKey,
   } from '@solana/web3.js';
   import { createMemeVote, getMemeVoteDetails } from '@/lib/actions/meme-arena.action';
-  import { sendUpdate } from '@/app/api/sse/route';
+  import { sendUpdate } from '@/lib/utils';
   import { headers } from 'next/headers';
   
   const actionHeaders = createActionHeaders();
@@ -43,8 +43,7 @@ import {
       };
   
       return Response.json(payload, { headers: actionHeaders });
-    } catch (err) {
-      console.error('Vote GET Error:', err);
+    } catch  {
       return Response.json({ message: 'Failed to process vote request' }, {
         status: 500,
         headers: actionHeaders,
@@ -66,7 +65,7 @@ import {
       let account: PublicKey;
       try {
         account = new PublicKey(body.account);
-      } catch (err) {
+      } catch {
         return Response.json({ message: 'Invalid wallet address provided' }, {
           status: 400,
           headers: actionHeaders,
@@ -117,7 +116,6 @@ import {
       }
   
     } catch (err) {
-      console.error('Vote POST Error:', err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       return Response.json({ message }, {
         status: 400,
@@ -141,7 +139,7 @@ import {
       memeId = memeIdParam;
       sessionId = sessionIdParam;
   
-    } catch (err) {
+    } catch {
       throw new Error('Invalid input parameters');
     }
   
@@ -151,7 +149,7 @@ import {
     };
   }
 
-  export async function getIpAddress(): Promise<string> {
+async function getIpAddress(): Promise<string> {
     const headersList = await headers();
     
     // Check all possible headers

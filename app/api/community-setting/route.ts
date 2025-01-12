@@ -4,8 +4,8 @@ import { BaseResponse, CommunitySettingData } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { VOTING_PERIOD } from '@/constants/community-setting.config';
+import { sendUpdate } from '@/lib/utils';
 
-import { sendUpdate } from "@/app/api/sse/route";
 
 export async function GET() {
   try {
@@ -51,7 +51,6 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json(result);
   } catch (error: any) {
-    console.log(error)
     return NextResponse.json(
       { error: error.message || 'Failed to submit vote' },
       { status: 500 }

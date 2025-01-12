@@ -1,14 +1,20 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./database/types";
-import { AINewsLabItem, IInvestment, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
+import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 import BN from "bn.js";
 import { formatDistanceToNow } from "date-fns";
+import SSEManager from "./sse/sse-manager";
 
 const TOKEN_DECIMALS = 6;
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function sendUpdate(type: string, data: Record<string, any>) {
+  const sseManager = SSEManager.getInstance();
+  return sseManager.broadcast(type, data);
 }
 
 export const formatTime = (time: number): string => {
@@ -208,8 +214,7 @@ export const calculateUserTokens = (
 
     const userTokenAmount = (contributionAmount / totalContributions) * adjustedVaultTokens;
     return Math.floor(userTokenAmount);
-  } catch (error) {
-    console.error('Error calculating user tokens:', error);
+  } catch  {
     return 0;
   }
 };
@@ -229,8 +234,7 @@ const formatCompactNumber = (number: number): string => {
     }
     
     return number.toString();
-  } catch (error) {
-    console.error('Error formatting number:', error);
+  } catch {
     return number.toString();
   }
 }
@@ -247,8 +251,7 @@ export const formatTokenAmount = (amount: number, showDecimals: boolean = true):
     }
     
     return formatted;
-  } catch (error) {
-    console.error('Error formatting token amount:', error);
+  } catch  {
     return amount.toString();
   }
 };

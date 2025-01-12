@@ -21,10 +21,6 @@ export const useCommunitySetting = () => {
   
   const { data, isLoading } = useGetAll()
   
-
-  console.log('Hook Data:', data);
-
-
   const getVotesForSetting = (settingKey: string) => {
     if (!data?.items[0]?.votes) return [];
     return data.items[0].votes.filter(vote => vote.settingKey === settingKey);

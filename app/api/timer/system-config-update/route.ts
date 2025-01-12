@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { SystemConfigTimerService } from '@/lib/services/system-config-timer.service';
+//import { SystemConfigTimerService } from '@/lib/services/system-config-timer.service';
 
 const verifyQStashSignature = async (req: NextRequest): Promise<boolean> => {
   const signature = req.headers.get('upstash-signature');
@@ -24,14 +24,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const timerService = SystemConfigTimerService.getInstance();
+    //const timerService = SystemConfigTimerService.getInstance();
     //const nextUpdate = await timerService.scheduleConfigUpdate();
 
     return NextResponse.json({ 
       success: true,
     });
-  } catch (error) {
-    console.error('Failed to update system config:', error);
+  } catch  {
     return NextResponse.json(
       { error: 'Failed to update system config' },
       { status: 500 }

@@ -63,13 +63,6 @@ export async function getSystemConfigAndVotes() {
     }
   }
 
-  // Re-fetch votes after initialization
-  const currentVotes = await SystemConfigVotes.find({
-    lastResetTime: { 
-      $gt: new Date(Date.now() - VOTING_PERIOD) 
-    }
-  });
-
   const responseData = { 
     config: config.toObject(), 
     votes: votes.map(vote => vote.toObject()),

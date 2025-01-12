@@ -2,11 +2,6 @@ import { Client } from '@upstash/qstash';
 import MemeNews from '../database/models/meme-news.model';
 import { connectToDatabase } from '../database/mongoose';
 
-interface NewsItem {
-  title: string;
-  source: string;
-}
-
 interface MemeResponse {
   news: string;
   meme: string;
@@ -43,9 +38,7 @@ export class NewsLabService {
       }
       const memes: MemeResponse[] = await response.json();
       return memes;
-    } catch (error) {
-      console.log(error)
-      console.error('Error fetching memes:', error);
+    } catch {
       throw new Error('Failed to fetch memes from API');
     }
   }
@@ -73,7 +66,6 @@ export class NewsLabService {
   // Process and save new memes to database
   private async processNewContent(newMemes: MemeResponse[]) {
     if (newMemes.length === 0) {
-      console.log('No new content to process');
       return 0;
     }
 
@@ -90,8 +82,7 @@ export class NewsLabService {
             image: meme.image
           });
           return true;
-        } catch (error) {
-          console.error(`Error saving meme for news: ${meme.news}`, error);
+        } catch  {
           return false;
         }
       })
@@ -121,7 +112,6 @@ export class NewsLabService {
         newContent: newMemes.length,
       };
     } catch (error) {
-      console.error('Error in checkAndProcessNewContent:', error);
       throw error;
     }
   }
@@ -148,7 +138,6 @@ export class NewsLabService {
         message: `News check scheduled successfully for every ${intervalMinutes} minutes`
       };
     } catch (error) {
-      console.error('Failed to schedule news check:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'

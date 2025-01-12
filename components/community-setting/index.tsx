@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { useMemo } from 'react';
@@ -26,7 +27,13 @@ const CommunitySetting: React.FC = () => {
     getCurrentValue
   } = useCommunitySetting();
 
-
+  const categories = useMemo(() => ({
+    investment: Object.entries(SETTINGS_CONFIG)
+      .filter(([_, config]) => config.category === 'investment'),
+    timing: Object.entries(SETTINGS_CONFIG)
+      .filter(([_, config]) => config.category === 'timing')
+  }), []);
+  
   const handleVote = async (settingKey: string, selectedValue: number) => {
     if (!publicKey) {
       toast.error('Please connect your wallet to vote');
@@ -62,12 +69,7 @@ const CommunitySetting: React.FC = () => {
     })) as Array<CommunitySettingOption & { votes: number }>;
   }
 
-  const categories = useMemo(() => ({
-    investment: Object.entries(SETTINGS_CONFIG)
-      .filter(([_, config]) => config.category === 'investment'),
-    timing: Object.entries(SETTINGS_CONFIG)
-      .filter(([_, config]) => config.category === 'timing')
-  }), []);
+
   
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">

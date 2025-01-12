@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
     await startContributing(sessionId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.log(error)
     return NextResponse.json({ error }, { status: 500 });
   }
 }

@@ -41,8 +41,8 @@ export const ContributorsPopup: React.FC<ContributorsPopupProps> = ({
         if (!response.ok) throw new Error('Failed to fetch contributors');
         const data = await response.json();
         setContributors(data);
-      } catch (error) {
-        console.error('Error fetching contributors:', error);
+      } catch {
+        throw new Error('Error fetching contributors')
       } finally {
         setIsLoading(false);
       }

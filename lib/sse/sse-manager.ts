@@ -45,8 +45,7 @@ class SSEManager {
       client.controller.enqueue(encoder.encode(': ping\n\n'));
       client.lastActivity = Date.now();
       return true;
-    } catch (error) {
-      console.error(`Client ${client.id} test failed:`, error);
+    } catch {
       return false;
     }
   }
@@ -57,12 +56,10 @@ class SSEManager {
 
     this.clients.forEach(async (client, clientId) => {
       if (now - client.lastActivity > inactiveTimeout || !client.isActive) {
-        console.log(`Removing inactive client: ${clientId}`);
         this.removeClient(clientId);
       } else {
         const isActive = await this.testClient(client);
         if (!isActive) {
-          console.log(`Removing failed client: ${clientId}`);
           this.removeClient(clientId);
         }
       }
@@ -79,11 +76,9 @@ class SSEManager {
     };
     
     this.clients.set(clientId, client);
-    console.log(`Client connected: ${clientId}. Total clients: ${this.clients.size}`);
     
     // Send initial test message
     this.testClient(client).catch(error => {
-      console.error(`Initial test failed for client ${clientId}:`, error);
       this.removeClient(clientId);
     });
 
@@ -95,7 +90,6 @@ class SSEManager {
     if (client) {
       client.isActive = false;
       this.clients.delete(clientId);
-      console.log(`Client disconnected: ${clientId}. Total clients: ${this.clients.size}`);
     }
   }
 
@@ -110,7 +104,6 @@ class SSEManager {
     const encoder = new TextEncoder();
     const encodedMessage = encoder.encode(message);
     
-    console.log(`Broadcasting ${type} event to ${this.clients.size} clients:`, messageData);
 
     const broadcastPromises: Promise<void>[] = [];
 
@@ -119,7 +112,6 @@ class SSEManager {
         new Promise<void>((resolve) => {
           try {
             if (!client.isActive) {
-              console.log(`Skipping inactive client: ${client.id}`);
               this.removeClient(client.id);
               resolve();
               return;
@@ -127,10 +119,8 @@ class SSEManager {
 
             client.controller.enqueue(encodedMessage);
             client.lastActivity = Date.now();
-            console.log(`Successfully sent ${type} event to client: ${client.id}`);
             resolve();
-          } catch (error) {
-            console.error(`Failed to send to client ${client.id}:`, error);
+          } catch {
             this.removeClient(client.id);
             resolve();
           }
@@ -139,7 +129,6 @@ class SSEManager {
     });
 
     await Promise.all(broadcastPromises);
-    console.log(`${type} broadcast complete. Active clients: ${this.clients.size}`);
   }
 
   getClientStatus(): { totalClients: number; clients: ClientStatus[] } {

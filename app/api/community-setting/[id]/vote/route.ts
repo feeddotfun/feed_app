@@ -1,11 +1,9 @@
-import { sendUpdate } from "@/app/api/sse/route";
-import { getActiveSessionMemes } from "@/lib/actions/meme-arena.action";
-import { createMemeFromNews } from "@/lib/actions/meme-news.action";
+import { sendUpdate } from "@/lib/utils";
 import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
    const { id } = await Promise.resolve(context.params);
@@ -19,20 +17,19 @@ export async function POST(
 
     //const meme = await convertTest(id);
 
-    sendUpdate('news-converted',{
-      data: {
-        newsId: id,
-        meme: meme,       
-        timestamp: Date.now()
-      }
-    });
-    return new Response(JSON.stringify(meme), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // sendUpdate('news-converted',{
+    //   data: {
+    //     newsId: id,
+    //     meme: meme,       
+    //     timestamp: Date.now()
+    //   }
+    // });
+    // return new Response(JSON.stringify(meme), {
+    //   status: 200,
+    //   headers: { 'Content-Type': 'application/json' }
+    // });
 
   } catch (error) {
-    console.error('Transform error:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Failed to transform news to meme' 
     }), {

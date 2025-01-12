@@ -25,7 +25,7 @@ export const handleAINewsLabEvents = (data: any, queryClient: QueryClient) => {
       default:
         queryClient.invalidateQueries({ queryKey: queryKeys.all() });
     }
-  } catch (error) {
-    console.error('Error handling meme event:', error);
+  } catch  {
+    throw new Error('Error handling meme event')
   }
 };

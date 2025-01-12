@@ -32,7 +32,6 @@ export function addClient(controller: ReadableStreamDefaultController): string {
     lastActiveAt: Date.now()
   });
 
-  console.log(`Client connected: ${id}. Total clients: ${clients.size}`);
   
   // Send initial connection confirmation
   sendEventToClient(id, {
@@ -45,7 +44,6 @@ export function addClient(controller: ReadableStreamDefaultController): string {
 
 export function removeClient(id: string) {
   clients.delete(id);
-  console.log(`Client disconnected: ${id}. Total clients: ${clients.size}`);
 }
 
 function sendEventToClient(clientId: string, eventData: any) {
@@ -67,9 +65,7 @@ function sendEventToClient(clientId: string, eventData: any) {
     client.lastEventId = event.id;
     client.lastActiveAt = Date.now();
     
-    console.log(`Event sent to client ${clientId}:`, event.type);
-  } catch (error) {
-    console.error(`Failed to send event to client ${clientId}:`, error);
+  } catch  {
     removeClient(clientId);
   }
 }

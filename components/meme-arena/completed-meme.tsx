@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Copy, ExternalLink, Check, RefreshCcw } from 'lucide-react';
+import { ExternalLink, RefreshCcw } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MemeArenaSessionData } from "@/types";
-import { IconCopy } from '@tabler/icons-react';
 import { CopyAddress } from '../ui/copy-address';
 
 interface CompletedMemeProps {
@@ -14,19 +13,6 @@ interface CompletedMemeProps {
 }
 
 export const CompletedMeme: React.FC<CompletedMemeProps> = ({ session }) => {
-  const [copied, setCopied] = useState(false);
-
-  const copyToClipboard = useCallback(async () => {
-    if (session.tokenMintAddress) {
-      try {
-        await navigator.clipboard.writeText(session.tokenMintAddress);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    }
-  }, [session.tokenMintAddress]);
 
   return (
     <motion.div

@@ -13,8 +13,7 @@ export async function GET() {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('Failed to fetch dashboard stats:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch dashboard stats' },
       { status: 500 }

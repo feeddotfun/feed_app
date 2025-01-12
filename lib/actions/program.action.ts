@@ -38,7 +38,6 @@ export async function memeContribute(
           return { serializedTransaction, lastValidBlockHeight };
       }
       catch (error) {
-          console.error('Contribute action error:', error);
           throw new Error(error instanceof Error ? error.message : 'Transaction creation failed');
       }
 }
@@ -60,8 +59,7 @@ export async function memeClaim(
         serializedTransaction,
         lastValidBlockHeight
       };
-    } catch (error) {
-      console.error('Claim action error:', error);
-      throw error;
+    } catch  {
+      throw new Error('Claim action error');
     }
   }

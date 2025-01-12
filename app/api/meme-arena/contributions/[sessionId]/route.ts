@@ -3,7 +3,7 @@ import { getWithSessionContributions } from '@/lib/actions/meme-arena.action';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { sessionId: string } }
+  context: any
 ) {
   const { sessionId } = await Promise.resolve(context.params);
   if (!sessionId) {
@@ -16,7 +16,7 @@ export async function GET(
   try {
     const contributions = await getWithSessionContributions(sessionId);
     return NextResponse.json(contributions);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch contributions' },
       { status: 500 }

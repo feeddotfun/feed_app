@@ -1,11 +1,11 @@
-import { sendUpdate } from "@/app/api/sse/route";
+import { sendUpdate } from "@/lib/utils";
 import { getActiveSessionMemes } from "@/lib/actions/meme-arena.action";
 import { createMemeFromNews } from "@/lib/actions/meme-news.action";
 import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
    const { id } = await Promise.resolve(context.params);
@@ -42,7 +42,6 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('Transform error:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Failed to transform news to meme' 
     }), {
@@ -51,6 +50,3 @@ export async function POST(
     });
   }
 }
-
-  
-  

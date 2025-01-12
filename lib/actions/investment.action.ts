@@ -10,12 +10,6 @@ import { transformInvestment } from "../utils";
 // ** Types
 import { InvestmentData } from "@/types";
 
-interface ContributionQuery {
-  contributor: string;
-  'session.status'?: string;
-  isTokensClaimed?: boolean;
-}
-
 interface UpdateClaimStatusParams {
   contributor: string;
   signature: string;
@@ -68,29 +62,6 @@ export async function getUserInvestments(walletAddress: string, page = 1, filter
     
     MemeContribution.countDocuments(query)
   ]);
-
-  // const [contributions, totalCount] = await Promise.all([
-  //   MemeContribution.find({ contributor: walletAddress })
-  //     .sort({ createdAt: -1, _id: -1 })
-  //     .skip(skipAmount)
-  //     .limit(ITEMS_PER_PAGE)
-  //     .populate([
-  //       {
-  //         path: 'session',
-  //         model: MemeArenaSession,
-  //         select: 'status tokenMintAddress claimAvailableTime totalContributions initialVaultTokens'
-  //       },
-  //       {
-  //         path: 'meme',
-  //         model: Meme,
-  //         select: 'name image ticker description memeProgramId'
-  //       }
-  //     ])
-  //     .lean(),
-    
-  //   MemeContribution.countDocuments({ contributor: walletAddress })
-  // ]);
-
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const hasMore = page < totalPages;
 
@@ -134,8 +105,7 @@ export async function updateClaimStatus({
       claimSignature: signature
     };
     
-  } catch (error) {
-    console.error('Update claim status error:', error);
-    throw error;
+  } catch  {
+    throw new Error('Update claim status error');
   }
 }

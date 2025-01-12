@@ -19,12 +19,7 @@ interface MemeCardProps {
   };
 }
 
-const MemeCard: React.FC<MemeCardProps> = ({ meme }) => {
-  const formatMarketCap = (value: any) => {
-    return `$50K`;
-  };
-
-  
+const MemeCard: React.FC<MemeCardProps> = ({ meme }) => {  
 
   return (
     <motion.div

@@ -162,7 +162,7 @@ export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.all() });
         break;
     }
-  } catch (error) {
-    console.error('Error handling meme arena event:', error);
+  } catch  {
+    throw new Error('Error meme arena events');
   }
 };

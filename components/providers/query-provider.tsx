@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { handleAINewsLabEvents } from '@/lib/query/ai-news-lab/events';
 import { handleCommunitySettingEvents } from '@/lib/query/community-setting/events';
 import { handleMemeArenaEvents } from '@/lib/query/meme-arena/event';
@@ -27,11 +28,9 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const retryCountRef = useRef(0);
-  const retryTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleEvent = (parsedData: any) => {
-    console.log('Processing event:', parsedData.type);
-    
+  const handleEvent = useCallback((parsedData: any) => {
     switch (parsedData.type) {
       case 'connected':
         retryCountRef.current = 0; // Reset retry count on successful connection
@@ -55,14 +54,11 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
       case 'vote-update':
       case 'config-update':
         handleCommunitySettingEvents(parsedData, queryClient);
-        break;
-        
-      default:
-        console.log('Unhandled event type:', parsedData.type);
+        break;        
     }
-  };
+  }, [queryClient]);
 
-  const connectSSE = () => {
+  const connectSSE = useCallback(() => {
     if (eventSourceRef.current?.readyState === EventSource.OPEN) {
       return;
     }
@@ -70,8 +66,6 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
     if (retryCountRef.current >= MAX_RETRIES) {
       return;
     }
-
-    console.log(`Connecting to SSE... (Attempt ${retryCountRef.current + 1}/${MAX_RETRIES})`);
     
     // Close existing connection if any
     if (eventSourceRef.current) {
@@ -82,6 +76,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
+      // Optional: Add any onopen logic
     };
 
     eventSource.onmessage = (event) => {
@@ -91,31 +86,27 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
         
         const parsedData = JSON.parse(eventData);
         handleEvent(parsedData);
-      } catch (error) {
-        console.error('Error processing SSE message:', error);
+      } catch {
+        throw new Error('Error processing SSE message')
       }
     };
 
     eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
       eventSource.close();
       
       const retryDelay = INITIAL_RETRY_DELAY * Math.pow(2, retryCountRef.current);
       retryCountRef.current += 1;
       
-      console.log(`Reconnecting in ${retryDelay}ms... (Attempt ${retryCountRef.current}/${MAX_RETRIES})`);
-      
       retryTimeoutRef.current = setTimeout(() => {
         connectSSE();
       }, retryDelay);
     };
-  };
+  }, [handleEvent]);
 
   // Handle visibility change
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('Page became visible, checking SSE connection');
         if (!eventSourceRef.current || eventSourceRef.current.readyState !== EventSource.OPEN) {
           retryCountRef.current = 0; // Reset retry count
           connectSSE();
@@ -127,7 +118,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [connectSSE]);
 
   // Initial connection
   useEffect(() => {
@@ -138,11 +129,10 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
         clearTimeout(retryTimeoutRef.current);
       }
       if (eventSourceRef.current) {
-        console.log('Closing SSE connection');
         eventSourceRef.current.close();
       }
     };
-  }, [queryClient]);
+  }, [connectSSE, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

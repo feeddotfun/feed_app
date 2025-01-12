@@ -30,7 +30,6 @@ export const SessionStats = ({
   // Determine which stats to show based on status
   const isVotingPhase = ['Voting', 'LastVoting'].includes(status);
   const isContributingPhase = status === 'Contributing';
-  const isCompleted = status === 'Completed';
 
   const getTimeDisplay = () => {
     if (status === 'LastVoting' && remainingTime !== null) {

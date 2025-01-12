@@ -74,7 +74,6 @@ export class InvestmentService extends BaseService<InvestmentData> {
 
       return { signature };
     } catch (error) {
-      console.error('Claim error:', error);
       throw error;
     }
   }

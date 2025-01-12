@@ -36,8 +36,8 @@ export default function NewsLabContent() {
     try {
       setLoadingItems(prev => ({ ...prev, [newsId]: true }));      
       await convertMutation.mutateAsync(newsId);
-    } catch (error) {
-      console.error('Failed to transform:', error);
+    } catch  {
+      throw new Error('Failed to transform')
     } finally {
       setLoadingItems(prev => ({ ...prev, [newsId]: false }));
     }

@@ -35,7 +35,6 @@ export default function WinnerMeme({
   const {
     isVisible,
     remainingTime,
-    isTokenCreation,
     isEligible,
     isContributing,
     handleContribute,

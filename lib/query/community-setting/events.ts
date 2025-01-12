@@ -48,7 +48,7 @@ export const handleCommunitySettingEvents = (data: any, queryClient: QueryClient
       default:
         break;
     }
-  } catch (error) {
-    console.error('Error handling community setting event:', error);
+  } catch  {
+    throw new Error('Error Community events')
   }
 };

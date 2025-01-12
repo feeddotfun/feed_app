@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       hasMore: data.hasMore,
       totalPages: data.totalPages
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch winning memes' },
       { status: 500 }

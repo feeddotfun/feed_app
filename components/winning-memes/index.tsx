@@ -19,10 +19,6 @@ const WinningMemesPage = () => {
     isFetchingNextPage 
   } = useWinningMemes();
 
-  if (isLoading) {
-    return <WinningMemesSkeleton />;
-  }
-
   const sortedMemes = useMemo(() => {
     if (!memes) return [];
     
@@ -40,7 +36,9 @@ const WinningMemesPage = () => {
     });
   }, [memes, sortBy]);
 
-
+  if (isLoading) {
+    return <WinningMemesSkeleton />;
+  }
 
   if (isError) {
     return <div>Error loading winning memes</div>;

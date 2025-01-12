@@ -44,8 +44,8 @@ export default function MemeCard({
         document.execCommand('copy');
         document.body.removeChild(tempInput);
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
+    } catch  {
+      throw new Error('Error sharing')
     }
   };
 

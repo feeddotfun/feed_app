@@ -2,8 +2,7 @@ import { updateClaimStatus } from '@/lib/actions/investment.action';
 import { NextResponse } from 'next/server';
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: Request
 ) {
   try {
     const { signature, contributor, memeId } = await req.json();
@@ -26,7 +25,6 @@ export async function POST(
       isTokensClaimed: result.isTokensClaimed
     });
   } catch (error) {
-    console.error('Status update error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update status' },
       { status: 500 }

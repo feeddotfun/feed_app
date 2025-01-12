@@ -37,7 +37,6 @@ export class SystemConfigTimerService {
           scheduledTime: new Date(now + delay)
         };
       } catch (error) {
-        console.error('Failed to schedule config update:', error);
         return {
           success: false,
           error

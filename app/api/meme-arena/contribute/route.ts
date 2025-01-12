@@ -29,7 +29,6 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    console.error('Contribute API error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create transaction' }, 
       { status: 500 }

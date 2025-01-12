@@ -26,9 +26,8 @@ export class AirdropStatsService extends BaseService<AirdropStats> {
 
       const data = await response.json();
       return data;
-    } catch (error) {
-      console.error('Error fetching airdrop stats:', error);
-      throw error;
+    } catch  {
+      throw new Error('Error fetching airdrop stats')
     }
   }
 }

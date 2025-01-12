@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import NextTopLoader from 'nextjs-toploader';
 import { JetBrains_Mono } from 'next/font/google';
-import ThemeProvider from '@/components/providers/theme-provider';
 import { SolanaWalletProvider } from '@/components/providers/solana-wallet-provider';
 
 import '../styles/globals.css';

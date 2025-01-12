@@ -217,19 +217,13 @@ export class MemeFundSDK {
             return response.data;
 
         } catch (error) {
-            console.error('Error creating token metadata:', error);
-            if (axios.isAxiosError(error)) {
-                console.error('Response data:', error.response?.data);
-                console.error('Response status:', error.response?.status);
-                console.error('Response headers:', error.response?.headers);
-            }
             throw error;
         }
     }
 
     async getVaultTokenAccount(mintAddress: string, memeUuid: string): Promise<{ amount: number }> {
         try {
-            const { memeId, buffer: memeIdBuffer } = uuidToMemeIdAndBuffer(memeUuid);
+            const { buffer: memeIdBuffer } = uuidToMemeIdAndBuffer(memeUuid);
             
             const [vaultPda] = PublicKey.findProgramAddressSync(
                 [Buffer.from("vault"), memeIdBuffer],
@@ -251,9 +245,8 @@ export class MemeFundSDK {
             return {
                 amount: Number(tokenAccount.value.amount)
             };
-        } catch (error) {
-            console.error('Error getting vault token account:', error);
-            throw error;
+        } catch {
+            throw new Error('Error get vault token account');
         }
     }
 
@@ -328,9 +321,8 @@ export class MemeFundSDK {
                 serializedTransaction: tx.serialize({ requireAllSignatures: false }).toString('base64'),
                 lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
             };
-        } catch (error) {
-            console.error('Error claiming tokens:', error);
-            throw error;
+        } catch  {
+            throw new Error('Error claiming tokens')
         }
     }
 

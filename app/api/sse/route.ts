@@ -19,15 +19,13 @@ export async function GET(request: NextRequest) {
       const keepAlive = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': keepalive\n\n'));
-        } catch (error) {
-          console.error('Keep-alive error:', error);
+        } catch {
           clearInterval(keepAlive);
           sseManager.removeClient(clientId);
         }
       }, 15000);
 
       request.signal.addEventListener('abort', () => {
-        console.log(`Client ${clientId} connection aborted`);
         clearInterval(keepAlive);
         sseManager.removeClient(clientId);
         controller.close();
@@ -42,10 +40,4 @@ export async function GET(request: NextRequest) {
       'Connection': 'keep-alive',
     },
   });
-}
-
-// Export utility function for other routes to use
-export function sendUpdate(type: string, data: Record<string, any>) {
-  const sseManager = SSEManager.getInstance();
-  return sseManager.broadcast(type, data);
 }

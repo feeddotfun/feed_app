@@ -99,8 +99,8 @@ export default function AddMeme({
       form.reset();
       setPreviewUrl(null);
       setIsOpen(false);
-    } catch (error) {
-      console.error('Failed to create meme:', error);
+    } catch  {
+      throw new Error('Failed to create meme')
     } finally {
       setIsSubmitting(false);
     }
