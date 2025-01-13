@@ -4,7 +4,7 @@ import { BaseResponse, CommunitySettingData } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { VOTING_PERIOD } from '@/constants/community-setting.config';
-import { sendUpdate } from '@/lib/utils';
+import { sendUpdate } from "@/lib/utils";
 
 
 export async function GET() {

@@ -8,7 +8,7 @@ import {
     PublicKey,
   } from '@solana/web3.js';
   import { createMemeVote, getMemeVoteDetails } from '@/lib/actions/meme-arena.action';
-  import { sendUpdate } from '@/lib/utils';
+  import { sendUpdate } from "@/lib/utils";
   import { headers } from 'next/headers';
   
   const actionHeaders = createActionHeaders();

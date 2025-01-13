@@ -12,35 +12,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export async function sendUpdate(type: string, data: Record<string, any>) {
-  try {
-    const sseManager = SSEManager.getInstance();
-
-    if (process.env.NODE_ENV === 'production') {
-      const origin = process.env.NEXT_PUBLIC_APP_URL || 
-        (typeof window !== 'undefined' ? window.location.origin : '');
-      
-      return fetch(`${origin}/api/broadcast`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ type, data })
-      });
-    } else {
-      return sseManager.broadcast(type, data);
-    }
-  } catch (error) {
-    console.error('Failed to send update:', error);
-    return false;
-  }
-}
-
 export const formatTime = (time: number): string => {
   const minutes = Math.floor(time / 60);
   const seconds = Math.floor(time % 60);
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
+
+export function sendUpdate(type: string, data: Record<string, any>) {
+  const sseManager = SSEManager.getInstance();
+  return sseManager.broadcast(type, data);
+}
 
 export const formatPhaseString = (status: string) => {
   switch (status) {

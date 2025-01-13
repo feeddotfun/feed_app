@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createMeme } from '@/lib/actions/meme-arena.action';
 import { CreateMemeParams } from '@/types';
-import { sendUpdate } from '@/lib/utils';
+import { sendUpdate } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {

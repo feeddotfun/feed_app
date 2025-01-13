@@ -21,29 +21,22 @@ type BroadcastData = Record<string, any>;
 
 class SSEManager {
   private clients: Map<string, Client>;
-  private cleanupInterval: NodeJS.Timer | undefined;
-  private readonly maxClients: number;
-  private readonly inactiveTimeout: number;
+  private cleanupInterval: NodeJS.Timer;
 
   protected constructor() {
     this.clients = new Map();
-    this.maxClients = process.env.NODE_ENV === 'production' ? 1000 : 100;
-    this.inactiveTimeout = process.env.NODE_ENV === 'production' ? 
-      30 * 60 * 1000 :
-      2 * 60 * 1000;
-    
-    this.startCleanup();
+    this.cleanupInterval = setInterval(() => this.cleanupInactiveClients(), 60000);
   }
 
-  private startCleanup() {
-    if (this.cleanupInterval) return;
-    
-    const interval = process.env.NODE_ENV === 'production' ? 120000 : 60000;
-    this.cleanupInterval = setInterval(() => this.cleanupInactiveClients(), interval);
-  
-    if (this.cleanupInterval.unref) {
-      this.cleanupInterval.unref();
+  public static createInstance(): SSEManager {
+    return new SSEManager();
+  }
+
+  public static getInstance(): SSEManager {
+    if (!global.sseManager) {
+      global.sseManager = SSEManager.createInstance();
     }
+    return global.sseManager;
   }
 
   private async testClient(client: Client): Promise<boolean> {
@@ -52,16 +45,17 @@ class SSEManager {
       client.controller.enqueue(encoder.encode(': ping\n\n'));
       client.lastActivity = Date.now();
       return true;
-    } catch (error) {
+    } catch  {
       return false;
     }
   }
 
   private cleanupInactiveClients() {
     const now = Date.now();
+    const inactiveTimeout = 2 * 60 * 1000; // 2 minutes
 
     this.clients.forEach(async (client, clientId) => {
-      if (now - client.lastActivity > this.inactiveTimeout || !client.isActive) {
+      if (now - client.lastActivity > inactiveTimeout || !client.isActive) {
         this.removeClient(clientId);
       } else {
         const isActive = await this.testClient(client);
@@ -73,14 +67,6 @@ class SSEManager {
   }
 
   addClient(controller: ReadableStreamDefaultController): string {
-    if (this.clients.size >= this.maxClients) {
-      const oldestClient = Array.from(this.clients.entries())
-        .sort(([, a], [, b]) => a.lastActivity - b.lastActivity)[0];
-      if (oldestClient) {
-        this.removeClient(oldestClient[0]);
-      }
-    }
-
     const clientId = uuidv4();
     const client: Client = {
       id: clientId,
@@ -91,11 +77,20 @@ class SSEManager {
     
     this.clients.set(clientId, client);
     
-    this.testClient(client).catch(() => {
+    // Send initial test message
+    this.testClient(client).catch(error => {
       this.removeClient(clientId);
     });
 
     return clientId;
+  }
+
+  removeClient(clientId: string) {
+    const client = this.clients.get(clientId);
+    if (client) {
+      client.isActive = false;
+      this.clients.delete(clientId);
+    }
   }
 
   async broadcast(type: string, data: BroadcastData) {
@@ -109,42 +104,45 @@ class SSEManager {
     const encoder = new TextEncoder();
     const encodedMessage = encoder.encode(message);
 
-    const broadcastPromises = Array.from(this.clients.entries()).map(async ([clientId, client]) => {
-      try {
-        if (!client.isActive) {
-          this.removeClient(clientId);
-          return;
-        }
+    const broadcastPromises: Promise<void>[] = [];
 
-        client.controller.enqueue(encodedMessage);
-        client.lastActivity = Date.now();
-      } catch  {
-        this.removeClient(clientId);
-      }
+    this.clients.forEach((client) => {
+      broadcastPromises.push(
+        new Promise<void>((resolve) => {
+          try {
+            if (!client.isActive) {
+              this.removeClient(client.id);
+              resolve();
+              return;
+            }
+
+            client.controller.enqueue(encodedMessage);
+            client.lastActivity = Date.now();
+            resolve();
+          } catch  {
+            this.removeClient(client.id);
+            resolve();
+          }
+        })
+      );
     });
-    await Promise.allSettled(broadcastPromises);
+
+    await Promise.all(broadcastPromises);
   }
 
-  removeClient(clientId: string) {
-    const client = this.clients.get(clientId);
-    if (client) {
-      client.isActive = false;
-      this.clients.delete(clientId);
-    }
-  }
-
-  public static createInstance(): SSEManager {
-    return new SSEManager();
-  }
-
-  public static getInstance(): SSEManager {
-    if (!global.sseManager) {
-      global.sseManager = SSEManager.createInstance();
-    }
-    return global.sseManager;
+  getClientStatus(): { totalClients: number; clients: ClientStatus[] } {
+    return {
+      totalClients: this.clients.size,
+      clients: Array.from(this.clients.values()).map(client => ({
+        id: client.id,
+        lastActivity: client.lastActivity,
+        isActive: client.isActive
+      }))
+    };
   }
 }
 
+// Protect against hot reload in development
 if (process.env.NODE_ENV !== 'production') {
   if (!global.sseManager) {
     global.sseManager = SSEManager.createInstance();

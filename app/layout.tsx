@@ -1,7 +1,3 @@
-export const fetchCache = 'force-no-store';
-export const dynamic = "force-dynamic"
-export const revalidate = 0
-
 import type { Metadata } from 'next';
 import NextTopLoader from 'nextjs-toploader';
 import { JetBrains_Mono } from 'next/font/google';
