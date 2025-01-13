@@ -4,6 +4,7 @@ import { IMeme, IMemeArenaSession, IMemeContribution, IMemeNews } from "./databa
 import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } from "@/types";
 import BN from "bn.js";
 import { formatDistanceToNow } from "date-fns";
+import SSEManager from "./sse/sse-manager";
 
 const TOKEN_DECIMALS = 6;
 
@@ -11,17 +12,28 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function sendUpdate(type: string, data: Record<string, any>) {
-  const origin = process.env.NEXT_PUBLIC_APP_URL || 
-  (typeof window !== 'undefined' ? window.location.origin : '');
-  
-  return fetch(`${origin}/api/broadcast`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ type, data })
-  });
+export async function sendUpdate(type: string, data: Record<string, any>) {
+  try {
+    const sseManager = SSEManager.getInstance();
+
+    if (process.env.NODE_ENV === 'production') {
+      const origin = process.env.NEXT_PUBLIC_APP_URL || 
+        (typeof window !== 'undefined' ? window.location.origin : '');
+      
+      return fetch(`${origin}/api/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type, data })
+      });
+    } else {
+      return sseManager.broadcast(type, data);
+    }
+  } catch (error) {
+    console.error('Failed to send update:', error);
+    return false;
+  }
 }
 
 export const formatTime = (time: number): string => {

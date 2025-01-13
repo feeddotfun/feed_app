@@ -1,17 +1,23 @@
 {
-    "functions": {
-      "app/api/**/*.ts": {
-        "maxDuration": 30
-      }
-    },
-    "routes": [
-      {
-        "src": "/api/sse",
-        "headers": {
-          "Cache-Control": "no-cache",
-          "Content-Type": "text/event-stream",
-          "Connection": "keep-alive"
-        }
-      }
-    ]
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/sse",
+      "headers": {
+        "Cache-Control": "no-cache, no-transform",
+        "Content-Type": "text/event-stream",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no"
+      },
+      "continue": true
+    }
+  ],
+  "regions": ["iad1"],
+  "framework": {
+    "version": 3
   }
+}

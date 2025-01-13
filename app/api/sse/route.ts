@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server';
 import SSEManager from '@/lib/sse/sse-manager';
 
-export const runtime = 'edge';
-
 export async function GET(request: NextRequest) {
   const sseManager = SSEManager.getInstance();
 
@@ -21,13 +19,15 @@ export async function GET(request: NextRequest) {
       const keepAlive = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': keepalive\n\n'));
-        } catch {
+        } catch (error) {
+          console.error('Keep-alive error:', error);
           clearInterval(keepAlive);
           sseManager.removeClient(clientId);
         }
       }, 15000);
 
       request.signal.addEventListener('abort', () => {
+        console.log(`Client ${clientId} connection aborted`);
         clearInterval(keepAlive);
         sseManager.removeClient(clientId);
         controller.close();

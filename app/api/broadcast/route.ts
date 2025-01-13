@@ -1,11 +1,18 @@
-import SSEManager from "@/lib/sse/sse-manager";
-
-export const runtime = 'edge';
+import { NextResponse } from 'next/server';
+import SSEManager from '@/lib/sse/sse-manager';
 
 export async function POST(request: Request) {
-  const { type, data } = await request.json();
-  const sseManager = SSEManager.getInstance();
-  await sseManager.broadcast(type, data);
-  
-  return new Response(JSON.stringify({ success: true }));
+  try {
+    const { type, data } = await request.json();
+    const sseManager = SSEManager.getInstance();
+    
+    await sseManager.broadcast(type, data);
+    
+    return NextResponse.json({ success: true });
+  } catch  {
+    return NextResponse.json(
+      { success: false, error: 'Failed to broadcast' },
+      { status: 500 }
+    );
+  }
 }
