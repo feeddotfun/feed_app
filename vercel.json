@@ -16,8 +16,5 @@
       "continue": true
     }
   ],
-  "regions": ["iad1"],
-  "framework": {
-    "version": 3
-  }
+  "regions": ["iad1"]
 }
