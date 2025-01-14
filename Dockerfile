@@ -14,6 +14,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Args
+ARG MONGODB_URI
+ENV MONGODB_URI=$MONGODB_URI
+
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
