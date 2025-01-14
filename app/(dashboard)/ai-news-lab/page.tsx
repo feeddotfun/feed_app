@@ -8,11 +8,16 @@ export default async function NewsLabPage() {
   const queryClient = new QueryClient();
   const queryKeys = new QueryKeys('aiNewsLab');
   
-  // Prefetch data on server
-  const initialData = await getAvailableNewsMemes();
-  await queryClient.prefetchQuery({
-    queryKey: queryKeys.all(),
-    queryFn: () => ({ items: initialData, total: initialData.length }),
+  // Prefetch first page of data on server
+  const initialData = await getAvailableNewsMemes(1);
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: [...queryKeys.all(), 'infinite'],
+    queryFn: () => initialData,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: { hasMore: any; }, pages: string | any[]) => {
+      if (!lastPage.hasMore) return undefined;
+      return pages.length + 1;
+    },
   });
 
   return (

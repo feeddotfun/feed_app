@@ -70,16 +70,25 @@ export class NewsLabService {
     }
 
     await connectToDatabase();
+
+  
     
     const savedMemes = await Promise.allSettled(
       newMemes.map(async (meme) => {
         try {
+          const shouldHide = 
+          (meme.meme?.length || 0) > 100 ||
+          (meme.meme?.match(/\p{Emoji}/gu) || []).length > 10 ||
+          !!meme.meme?.match(/(.)\1{4,}/g) || 
+          !!meme.meme?.match(/[a-zA-Z]{15,}/g);
+
           await MemeNews.create({
             news: meme.news,
             meme: meme.meme,
             name: meme.name,
             ticker: meme.ticker,
-            image: meme.image
+            image: meme.image,
+            isHidden: shouldHide
           });
           return true;
         } catch  {

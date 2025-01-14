@@ -8,35 +8,38 @@ import { transformNewsItems } from "../utils";
 import { IMemeNews } from "../database/types";
 
 
+const ITEMS_PER_PAGE = 6;
+
 // Get all available news memes
-export async function getAvailableNewsMemes() {
+export async function getAvailableNewsMemes(page = 1) {
   await connectToDatabase();
-  const news = await MemeNews.find({ 
+  
+  const skipAmount = (page - 1) * ITEMS_PER_PAGE;
+
+  const query = { 
     isHidden: { $ne: true },
-    isConverted: { $ne: true}
-  })
-    .sort('-createdAt')
-    .limit(10)
-    .lean();
-  
-    const updatedNews = await Promise.all(news.map(async (item) => {
-      const shouldHide = 
-        (item.meme?.length || 0) > 100 ||
-        (item.meme?.match(/\p{Emoji}/gu) || []).length > 10 ||
-        !!item.meme?.match(/(.)\1{4,}/g) || 
-        !!item.meme?.match(/[a-zA-Z]{15,}/g); 
-  
-      if (shouldHide && !item.isHidden) {
-        await MemeNews.findByIdAndUpdate(item._id, { isHidden: true });
-      }
-  
-      return {
-        ...item,
-        isHidden: shouldHide
-      };
-    }));
-    updatedNews.filter(item => !item.isHidden && !item.isConverted); 
-    return transformNewsItems(updatedNews as IMemeNews[]);
+    isConverted: { $ne: true }
+  };
+
+  const [news, totalCount] = await Promise.all([
+    MemeNews.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skipAmount)
+      .limit(ITEMS_PER_PAGE)
+      .lean(),
+    
+    MemeNews.countDocuments(query)
+  ]);
+
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  const hasMore = page < totalPages;
+
+  return {
+    items: transformNewsItems(news as IMemeNews[]),
+    totalPages,
+    hasMore
+  };
 }
 
 

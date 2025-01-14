@@ -1,5 +1,5 @@
 import { BaseService } from '../core/base-service';
-import type { AINewsLabItem } from '@/types';
+import type { AINewsLabItem, InfiniteQueryParams, ServiceResponse } from '@/types';
 
 export class AINewsLabService extends BaseService<AINewsLabItem> {
   constructor() {
@@ -13,6 +13,18 @@ export class AINewsLabService extends BaseService<AINewsLabItem> {
     
     return data;
   }
+
+  async getInfinite(params: InfiniteQueryParams): Promise<ServiceResponse<AINewsLabItem>> {
+    const queryParams = new URLSearchParams({
+      page: params.page?.toString() || '1',
+      limit: params.limit?.toString() || '6'
+    });
+
+    const response = await fetch(`${this.baseURL}?${queryParams}`);
+    if (!response.ok) throw new Error(`Failed to fetch ${this.baseURL}`);
+    return response.json();
+  }
+  
 
   vote(id: string): Promise<AINewsLabItem> {
     return this.customAction(`${this.baseURL}/${id}/vote`);
