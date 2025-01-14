@@ -9,4 +9,7 @@ export interface WinningMemeData extends BaseEntity {
     votes: number;
     date: string;
     mintAddress: string;
-  }
+}
+
+const SORT_OPTIONS = ['votes', 'created'] as const;
+export type WinningMemesSortType = typeof SORT_OPTIONS[number]; 

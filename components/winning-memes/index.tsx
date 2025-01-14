@@ -1,15 +1,16 @@
 'use client'
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy, Loader2, Clock } from "lucide-react";
 import { useWinningMemes } from '@/lib/query/winning-memes/hooks';
 import MemeCard from './meme-card';
 import { Separator } from '../ui/separator';
 import { WinningMemesSkeleton } from '../skeletons';
+import { WinningMemesSortType } from '@/types';
 
 const WinningMemesPage = () => {
-  const [sortBy, setSortBy] = useState('votes');
+  const [sortBy, setSortBy] = useState<WinningMemesSortType>('votes');
   const { 
     memes, 
     isLoading, 
@@ -17,24 +18,7 @@ const WinningMemesPage = () => {
     fetchNextPage, 
     hasNextPage, 
     isFetchingNextPage 
-  } = useWinningMemes();
-
-  const sortedMemes = useMemo(() => {
-    if (!memes) return [];
-    
-    return [...memes].sort((a, b) => {
-      switch (sortBy) {
-        case 'votes':
-          return b.votes - a.votes;
-        case 'marketCap':
-          return 0;
-        case 'created':
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        default:
-          return 0;
-      }
-    });
-  }, [memes, sortBy]);
+  } = useWinningMemes(sortBy);
 
   if (isLoading) {
     return <WinningMemesSkeleton />;
@@ -52,14 +36,34 @@ const WinningMemesPage = () => {
           Winning Memes
         </h1>
         
-        <Select value={sortBy} onValueChange={setSortBy}>
+        <Select value={sortBy} onValueChange={(value) => setSortBy(value as WinningMemesSortType)}>
           <SelectTrigger className="w-[180px] bg-[#141716] border-none">
-            <SelectValue placeholder="Sort by..." />
+            <SelectValue>
+              {sortBy === 'votes' && (
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4" /> Most Votes
+                </div>
+              )}
+              {sortBy === 'created' && (
+                <div className='flex items-center gap-2'>
+                  <Clock className='h-4 w-4'/> Creation Time
+                </div>
+              )}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="votes">Most Votes</SelectItem>
-            <SelectItem value="marketCap">Market Cap</SelectItem>
-            <SelectItem value="created">Creation Time</SelectItem>
+            <SelectItem value="votes">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Most Votes
+              </div>
+            </SelectItem>
+            <SelectItem value="created">
+              <div className='flex items-center gap-2'>
+                <Clock className="h-4 w-4" />
+                Creation Time
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -67,7 +71,7 @@ const WinningMemesPage = () => {
       <Separator/>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedMemes.map((meme) => (
+        {memes.map((meme) => (
           <MemeCard key={meme.id} meme={meme} />
         ))}
       </div>
@@ -79,7 +83,7 @@ const WinningMemesPage = () => {
             disabled={isFetchingNextPage}
             variant="outline"
             size="lg"
-            className="min-w-[200px]"
+            className="border-[#99FF19]/20 text-[#99FF19] hover:bg-[#99FF19]/10"
           >
             {isFetchingNextPage ? (
               <>
@@ -96,4 +100,4 @@ const WinningMemesPage = () => {
   );
 };
 
-export default WinningMemesPage;
+export default WinningMemesPage

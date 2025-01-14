@@ -14,6 +14,7 @@ export interface BaseResponse<T> {
 export interface InfiniteQueryParams {
   page?: number;
   limit?: number;
+  sortBy?: string;
   [key: string]: any;
 }
   

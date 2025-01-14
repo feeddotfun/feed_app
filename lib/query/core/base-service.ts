@@ -17,7 +17,8 @@ export class BaseService<T extends BaseEntity> {
     async getInfinite(params: InfiniteQueryParams): Promise<ServiceResponse<T>> {
       const queryParams = new URLSearchParams({
         page: params.page?.toString() || '1',
-        limit: params.limit?.toString() || '6'
+        limit: params.limit?.toString() || '6',
+        ...(params.sortBy && { sortBy: params.sortBy })
       });
 
       const response = await fetch(`${this.baseURL}?${queryParams}`);

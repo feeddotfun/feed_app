@@ -34,10 +34,10 @@ export function createGenericQuery<
       });
     };
 
-    const useInfiniteItems = (config?: QueryConfig) => {
+    const useInfiniteItems = (config?: QueryConfig  & { customParams?: any, queryKey?: any[] }) => {
       return useInfiniteQuery<ServiceResponse<T>, Error>({
-        queryKey: [...queryKeys.all(), 'infinite'],
-        queryFn: ({ pageParam = 1 }) => service.getInfinite({ page: pageParam as number, limit: 6 }),
+        queryKey: config?.queryKey || [...queryKeys.all(), 'infinite'],
+        queryFn: ({ pageParam = 1 }) => service.getInfinite({ page: pageParam as number, limit: 6,  ...config?.customParams }),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => lastPage.hasMore ? allPages.length + 1 : undefined,
         staleTime: config?.staleTime ?? defaultConfig?.staleTime,

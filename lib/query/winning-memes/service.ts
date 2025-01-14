@@ -1,5 +1,5 @@
 import { BaseService } from '../core/base-service';
-import { BaseResponse, ServiceResponse, WinningMemeData } from '@/types';
+import { BaseResponse, InfiniteQueryParams, ServiceResponse, WinningMemeData } from '@/types';
 
 export class WinningMemesService extends BaseService<WinningMemeData> {
   constructor() {
@@ -12,8 +12,14 @@ export class WinningMemesService extends BaseService<WinningMemeData> {
     return response.json();
   }
 
-  async getInfinite(params: { page: number }): Promise<ServiceResponse<WinningMemeData>> {
-    const response = await fetch(`${this.baseURL}?page=${params.page}`);
+  async getInfinite(params: InfiniteQueryParams & { sortBy?: string }): Promise<ServiceResponse<WinningMemeData>> {
+    const queryParams = new URLSearchParams({
+      page: params.page?.toString() || '1',
+      limit: params.limit?.toString() || '6',
+      ...(params.sortBy && { sortBy: params.sortBy })
+    });
+
+    const response = await fetch(`${this.baseURL}?${queryParams}`);
     if (!response.ok) throw new Error(`Failed to fetch ${this.baseURL}`);
     return response.json();
   }

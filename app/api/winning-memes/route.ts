@@ -5,7 +5,9 @@ export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
-    const data = await getWinningMemes(page);
+    const sortBy = searchParams.get('sortBy') || 'votes';
+
+    const data = await getWinningMemes(page, sortBy);
     
     return NextResponse.json({
       items: data.items,

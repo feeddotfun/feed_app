@@ -7,10 +7,11 @@ import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query
 export default async function WinningMemes() {
   const queryClient = new QueryClient();
   const queryKeys = new QueryKeys('winningMemes');
+  const defaultSort = 'votes'
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: [...queryKeys.all(), 'infinite'],
-    queryFn: ({ pageParam = 1 }) => getWinningMemes(pageParam),
+    queryKey: [...queryKeys.all(), 'infinite', { sortBy: defaultSort }],
+    queryFn: ({ pageParam = 1 }) => getWinningMemes(pageParam, defaultSort),
     initialPageParam: 1,
   });
 

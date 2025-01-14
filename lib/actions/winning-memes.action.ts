@@ -5,7 +5,7 @@ import { IMemeArenaSession } from "../database/types";
 
 const ITEMS_PER_PAGE = 6;
 
-export async function getWinningMemes(page = 1): Promise<{
+export async function getWinningMemes(page = 1, sortBy = 'votes'): Promise<{
   items: WinningMemeData[];
   totalPages: number;
   hasMore: boolean;
@@ -14,9 +14,16 @@ export async function getWinningMemes(page = 1): Promise<{
 
   const skipAmount = (page - 1) * ITEMS_PER_PAGE;
 
+  let sortQuery: any = {};
+  if (sortBy == 'votes')
+    sortQuery = { totalVotes: -1 }
+  else if (sortBy === 'created')
+    sortQuery = { createdAt: -1 }
+
+
   const [winningMemes, totalCount] = await Promise.all([
     Meme.find({ isWinner: true })
-      .sort({ createdAt: -1, _id: -1 })
+      .sort({ ...sortQuery, _id: -1 })
       .skip(skipAmount)
       .limit(ITEMS_PER_PAGE)
       .populate<{ session: IMemeArenaSession }>('session', 'tokenMintAddress')

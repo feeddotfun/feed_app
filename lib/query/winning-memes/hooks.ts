@@ -1,6 +1,6 @@
 import { createGenericQuery } from '../core/use-generic-query';
 import { WinningMemesService } from './service';
-import { WinningMemeData } from '@/types';
+import { WinningMemesSortType, WinningMemeData } from '@/types';
 import { useMemo } from 'react';
 
 const winningMemesService = new WinningMemesService();
@@ -13,9 +13,12 @@ const useWinningMemesQuery = createGenericQuery<
   { staleTime: 30000 }
 );
 
-export const useWinningMemes = () => {
+export const useWinningMemes = (sortBy: WinningMemesSortType = 'votes') => {
   const { useInfiniteItems } = useWinningMemesQuery();
-  const query = useInfiniteItems();
+  const query = useInfiniteItems({
+    customParams: { sortBy },
+    queryKey: ['winningMemes', 'infinite', { sortBy }]
+  });
   
   const memes = useMemo(() => {
     if (!query.data?.pages) return [];
