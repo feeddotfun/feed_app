@@ -23,12 +23,14 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
         return 0;
       }
       
+      if (now >= end) {
+        return 100;
+      }
+      
       const total = end - start;
       const elapsed = now - start;
       
-      const progress = Math.max(0, Math.min(100, (elapsed / total) * 100));
-      
-      return progress;
+      return Math.max(0, Math.min(100, (elapsed / total) * 100));
     } catch  {
       return 0;
     }
@@ -44,7 +46,7 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
       }
       
       if (end < now) {
-        return 'Voting ended';
+        return 'Starting new voting period...';
       }
 
       const diff = end - now;
@@ -53,14 +55,14 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
 
       if (hours > 24) {
         const days = Math.floor(hours / 24);
-        return `Ends in ${days} ${days === 1 ? 'day' : 'days'}`;
+        return `${days} ${days === 1 ? 'day' : 'days'} remaining`;
       }
 
       if (hours > 0) {
-        return `Ends in ${hours}h ${minutes}m`;
+        return `${hours}h ${minutes}m remaining`;
       }
 
-      return `Ends in ${minutes} minutes`;
+      return `${minutes} minutes remaining`;
     } catch {
       return 'Error calculating time';
     }
@@ -79,11 +81,9 @@ export const VotingProgress: React.FC<VotingProgressProps> = ({
       setTimeRemaining(newTimeRemaining);
     };
 
-    // Initial update
     updateValues();
 
-    // Update every minute
-    const interval = setInterval(updateValues, 60000);
+    const interval = setInterval(updateValues, 10000);
 
     return () => clearInterval(interval);
   }, [endTime, startTime, calculateProgress, getTimeRemaining]);

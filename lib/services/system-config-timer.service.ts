@@ -1,46 +1,69 @@
 import { Client } from "@upstash/qstash";
 
 export class SystemConfigTimerService {
-    private static instance: SystemConfigTimerService;
-    private qstash: Client;
-  
-    private constructor() {
-      this.qstash = new Client({
-        token: process.env.QSTASH_TOKEN!
+  private static instance: SystemConfigTimerService;
+  private qstash: Client;
+
+  private constructor() {
+    this.qstash = new Client({
+      token: process.env.QSTASH_TOKEN!
+    });
+  }
+
+  static getInstance(): SystemConfigTimerService {
+    if (!SystemConfigTimerService.instance) {
+      SystemConfigTimerService.instance = new SystemConfigTimerService();
+    }
+    return SystemConfigTimerService.instance;
+  }
+
+  async createVotingSchedule() {
+    try {      
+      const response = await this.qstash.schedules.create({
+        destination: `${process.env.API_URL}/api/timer/system-config-update`,
+        cron: "0 0 * * *",
+        retries: 3,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-    }
-  
-    static getInstance(): SystemConfigTimerService {
-      if (!SystemConfigTimerService.instance) {
-        SystemConfigTimerService.instance = new SystemConfigTimerService();
-      }
-      return SystemConfigTimerService.instance;
-    }
-  
-    async scheduleConfigUpdate(delay: number = 24 * 60 * 60 * 1000) { // 24 Hours
-      const now = Date.now();
-      const endTime = Math.round((now + delay) / 1000);
-      
-      try {      
-        await this.qstash.publishJSON({
-          url: `${process.env.API_URL}/api/timer/system-config-update`,
-          body: { 
-            scheduledAt: now,
-            expectedEndTime: now + delay
-          },
-          notBefore: endTime,
-          retries: 3
-        });
-  
-        return {
-          success: true,
-          scheduledTime: new Date(now + delay)
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error
-        };
-      }
+
+      return {
+        success: true,
+        scheduleId: response.scheduleId
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error
+      };
     }
   }
+
+  async deleteSchedule(scheduleId: string) {
+    try {
+      await this.qstash.schedules.delete(scheduleId);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error
+      };
+    }
+  }
+
+  async listSchedules() {
+    try {
+      const schedules = await this.qstash.schedules.list();
+      return {
+        success: true,
+        schedules
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error
+      };
+    }
+  }
+}

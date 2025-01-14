@@ -31,37 +31,19 @@ export async function getSystemConfigAndVotes() {
   await connectToDatabase();
   
   const config = await SystemConfig.getConfig();
+  
   const votes = await SystemConfigVotes.find({
     lastResetTime: { 
       $gt: new Date(Date.now() - VOTING_PERIOD) 
     }
   });
 
-  // Get or create voting session timestamps
-  let votingStartTime = new Date(Date.now() - 1000 * 60 * 60); // 1 hour ago
-  let votingEndTime = new Date(Date.now() + VOTING_PERIOD - (1000 * 60 * 60)); // 23 hours from now
+  const mostRecentVote = votes.reduce((latest, current) => 
+    latest.lastResetTime > current.lastResetTime ? latest : current
+  , { lastResetTime: new Date(0) });
 
-  // Initialize votes for all config options
-  for (const [settingKey, setting] of Object.entries(SETTINGS_CONFIG)) {
-    for (const option of setting.options) {
-      const existingVote = votes.find(v => 
-        v.settingKey === settingKey && v.optionValue === option.value
-      );
-      
-      if (!existingVote) {
-        await SystemConfigVotes.create({
-          settingKey,
-          optionValue: option.value,
-          votes: 0,
-          lastResetTime: votingStartTime
-        });
-      } else {
-        // If we have existing votes, use their lastResetTime
-        votingStartTime = existingVote.lastResetTime;
-        votingEndTime = new Date(votingStartTime.getTime() + VOTING_PERIOD);
-      }
-    }
-  }
+  const votingStartTime = mostRecentVote.lastResetTime;
+  const votingEndTime = new Date(votingStartTime.getTime() + VOTING_PERIOD);
 
   const responseData = { 
     config: config.toObject(), 
@@ -167,5 +149,80 @@ export async function submitVote(data: {
     throw error;
   } finally {
     dbSession.endSession();
+  }
+}
+
+// Update System Config Most Votes
+export async function updateSystemConfigWithWinningVotes() {
+  await connectToDatabase();
+
+  try {
+    // Get all votes from the previous period
+    const previousPeriodStart = new Date(Date.now() - VOTING_PERIOD);
+    const votes = await SystemConfigVotes.find({
+      lastResetTime: { 
+        $gt: previousPeriodStart 
+      }
+    });
+
+    // Group votes by settingKey
+    const votesBySetting = votes.reduce((acc, vote) => {
+      if (!acc[vote.settingKey]) {
+        acc[vote.settingKey] = [];
+      }
+      acc[vote.settingKey].push(vote);
+      return acc;
+    }, {} as Record<string, typeof votes>);
+
+    // Find winning votes and update system config
+    const updateData: Record<string, number> = {};
+    
+    for (const [settingKey, settingVotes] of Object.entries(votesBySetting)) {
+      if (settingVotes.length === 0) continue;
+
+      // Find the option with most votes
+      const winningVote = settingVotes.reduce((prev, current) => 
+        current.votes > prev.votes ? current : prev
+      );
+
+      if (winningVote.votes > 0) {
+        updateData[settingKey] = winningVote.optionValue;
+      }
+    }
+
+    // Update system config if there are any winning votes
+    if (Object.keys(updateData).length > 0) {
+      const updatedConfig = await SystemConfig.findOneAndUpdate(
+        {},
+        updateData,
+        { new: true }
+      );
+
+      // Notify clients of all config updates
+      for (const [setting, value] of Object.entries(updateData)) {
+        sendUpdate({
+          type: 'config-update',
+          setting,
+          value
+        });
+      }
+
+      return {
+        success: true,
+        updatedConfig: updatedConfig?.toObject()
+      };
+    }
+
+    return {
+      success: true,
+      updatedConfig: null
+    };
+
+  } catch (error) {
+    console.error('Failed to update system config with winning votes:', error);
+    return {
+      success: false,
+      error
+    };
   }
 }
