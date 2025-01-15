@@ -14,8 +14,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Ts-node
-RUN pnpm add -D ts-node typescript @types/node
+# Env
+COPY .env* ./
 
 # Args
 ARG MONGODB_URI
