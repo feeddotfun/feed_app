@@ -30,6 +30,10 @@ RUN echo "Checking MONGODB_URI..." && \
         exit 1; \
     fi
 
+
+# Initial session script
+RUN pnpm ts-node scripts/ensure-initial-session.ts
+
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
