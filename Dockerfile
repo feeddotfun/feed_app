@@ -43,9 +43,6 @@ RUN if [ -z "$MONGODB_URI" ]; then \
 
 RUN pnpm run build
 
-# Initial session script
-RUN pnpm ts-node scripts/ensure-initial-session.ts
-
 # Runner
 FROM node:20-alpine AS runner
 WORKDIR /app
