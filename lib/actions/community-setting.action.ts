@@ -108,7 +108,7 @@ export async function submitVote(data: {
         lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
       },
       { $inc: { votes: 1 } },
-      { new: true, session: dbSession }
+      { new: true, upsert: true, session: dbSession }
     );
 
     if (!updatedVote) {

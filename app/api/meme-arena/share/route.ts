@@ -11,8 +11,16 @@ import {
   import { sendUpdate } from "@/lib/utils";
   import { headers } from 'next/headers';
   
-  const actionHeaders = createActionHeaders();
-  
+  const actionHeaders = {
+    ...createActionHeaders(),
+    'X-Action-Version': '1',
+    'X-Blockchain-Ids': process.env.BLOCKCHAIN_ID!,
+    'Access-Control-Expose-Headers': 'X-Blockchain-Ids, X-Action-Version',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': '*'
+  };
+
   export const GET = async (req: Request) => {
     try {
       const requestUrl = new URL(req.url);
@@ -149,24 +157,23 @@ import {
     };
   }
 
-async function getIpAddress(): Promise<string> {
+  async function getIpAddress(): Promise<string> {
     const headersList = await headers();
     
-    // Check all possible headers
-    const forwardedFor = headersList.get('x-forwarded-for');
-    const vercelForwardedFor = headersList.get('x-vercel-forwarded-for');
-    const cfConnectingIp = headersList.get('cf-connecting-ip');
-    const realIp = headersList.get('x-real-ip');
-  
-    // For development, return a mock IP
     if (process.env.NODE_ENV === 'development') {
       return '127.0.0.1';
     }
-  
-    // In order of preference
-    return vercelForwardedFor || 
-           (forwardedFor?.split(',')[0].trim()) || 
-           cfConnectingIp || 
+
+    // Cloudflare proxy
+    const cfConnectingIp = headersList.get('cf-connecting-ip');
+    if (cfConnectingIp) {
+      return cfConnectingIp;
+    }
+    
+    const forwardedFor = headersList.get('x-forwarded-for');
+    const realIp = headersList.get('x-real-ip');
+    
+    return (forwardedFor?.split(',')[0].trim()) || 
            realIp || 
            '127.0.0.1';
 }
