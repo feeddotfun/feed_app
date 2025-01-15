@@ -21,6 +21,11 @@ ENV MONGODB_URI=$MONGODB_URI
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Environment variable check
+RUN if [ -z "$MONGODB_URI" ]; then \
+    echo "Error: MONGODB_URI is required for build" && exit 1; \
+    fi
+
 RUN pnpm run build
 
 # Runner
@@ -30,6 +35,8 @@ WORKDIR /app
 # Production
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG MONGODB_URI
+ENV MONGODB_URI=$MONGODB_URI
 
 # Non-root
 RUN addgroup --system --gid 1001 nodejs
@@ -38,6 +45,10 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+# Copy .env files
+COPY --from=builder /app/.env.production ./.env.production
+COPY --from=builder /app/.env ./.env
 
 # Permissions
 RUN chown -R nextjs:nodejs /app
