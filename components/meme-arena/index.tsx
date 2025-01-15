@@ -30,6 +30,7 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
   console.log(process.env.NEXT_PUBLIC_RPC_URL)
   const { connected, publicKey, signTransaction } = useWallet();
   console.log('RPC', process.env.NEXT_PUBLIC_RPC_URL);
+  console.log('UPLOAD_URL', process.env.NEXT_PUBLIC_UPLOAD_API_URL)
   const { 
     memes, 
     session, 
