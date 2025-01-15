@@ -14,9 +14,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Env
-COPY .env* ./
-
 # Args
 ARG MONGODB_URI
 ENV MONGODB_URI=$MONGODB_URI
@@ -60,10 +57,6 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-
-# Copy .env files
-COPY --from=builder /app/.env.production ./.env.production
-COPY --from=builder /app/.env ./.env
 
 # Permissions
 RUN chown -R nextjs:nodejs /app
