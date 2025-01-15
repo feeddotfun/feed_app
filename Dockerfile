@@ -18,6 +18,18 @@ COPY . .
 ARG MONGODB_URI
 ENV MONGODB_URI=$MONGODB_URI
 
+# Check URI
+RUN echo "Checking MONGODB_URI..." && \
+    if [ -z "$MONGODB_URI" ]; then \
+        echo "Error: MONGODB_URI is not set" && \
+        exit 1; \
+    fi && \
+    echo "MONGODB_URI is set. First 10 characters: ${MONGODB_URI:0:10}..." && \
+    if [[ "$MONGODB_URI" != mongodb* ]]; then \
+        echo "Error: MONGODB_URI does not start with 'mongodb'" && \
+        exit 1; \
+    fi
+
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
