@@ -60,7 +60,13 @@ import {
   };
   
   export const OPTIONS = async (req: Request) => {
-    return new Response(null, { headers: actionHeaders });
+    const optionsHeaders = {
+      ...actionHeaders,
+      'Allow': 'GET, POST, OPTIONS',
+      'Content-Length': '0',
+      'Content-Type': 'text/plain'
+    };
+    return new Response(null, {status: 204, headers: optionsHeaders });
   };
   
   export const POST = async (req: Request) => {
@@ -112,7 +118,7 @@ import {
             }
           };
   
-        return Response.json(response, { headers: actionHeaders });
+        return Response.json(response, { status: 200, headers: actionHeaders });
   
       } catch (error) {
         // Handle vote-specific errors
