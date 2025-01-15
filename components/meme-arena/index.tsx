@@ -27,7 +27,9 @@ interface SystemConfig {
 
 export default function MemeArena({ systemConfig }: MemeArenaProps) {
   const [votingMemeIds, setVotingMemeIds] = useState<string[]>([]);
+  console.log(process.env.NEXT_PUBLIC_RPC_URL)
   const { connected, publicKey, signTransaction } = useWallet();
+  console.log('RPC', process.env.NEXT_PUBLIC_RPC_URL);
   const { 
     memes, 
     session, 
