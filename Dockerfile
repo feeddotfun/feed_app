@@ -33,10 +33,6 @@ RUN echo "Checking MONGODB_URI..." && \
         exit 1; \
     fi
 
-
-# Initial session script
-RUN pnpm ts-node scripts/ensure-initial-session.ts
-
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -46,6 +42,9 @@ RUN if [ -z "$MONGODB_URI" ]; then \
     fi
 
 RUN pnpm run build
+
+# Initial session script
+RUN pnpm ts-node scripts/ensure-initial-session.ts
 
 # Runner
 FROM node:20-alpine AS runner
