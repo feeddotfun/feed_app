@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import PageContainer from "@/components/layout/page-container";
 import WinningMemesPage from "@/components/winning-memes";
 import { getWinningMemes } from '@/lib/actions/winning-memes.action';

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAvailableNewsMemes } from "@/lib/actions/meme-news.action";
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/lib/query/core/query-keys';
