@@ -1,7 +1,7 @@
 'use server'
 
 // ** DB
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 import sanitize from "mongo-sanitize";
 import { connectToDatabase } from "../database/mongoose";
 import MemeArenaSession from "../database/models/meme-arena-session.model";
@@ -23,9 +23,34 @@ import MemeContribution from "../database/models/meme-contribution.model";
 import { MemeFundSDK } from "../meme-fund/fund.sdk";
 
 
+async function ensureCollectionsExist(connection: Mongoose) {
+    if (!connection?.connection?.db) {
+      console.warn('Database connection not initialized');
+      return;
+  }
+  const requiredCollections = [
+      'memecontributions',
+      'memes',
+      'memevotes',      
+  ];
+  const collections = await connection.connection.db.listCollections().toArray();
+  const existingCollections = collections.map(col => col.name);
+
+  for (const collection of requiredCollections) {
+      if (!existingCollections.includes(collection)) {
+          await connection.connection.db.createCollection(collection);
+          console.log(`Created collection: ${collection}`);
+      }
+  }
+}
+
 // ** Initialize system
 export async function initializeSystem() {
-    await connectToDatabase();
+    const connection = await connectToDatabase();
+
+    if (connection) {
+      ensureCollectionsExist(connection)
+    }
     await SystemConfig.getConfig(); 
     const activeSession = await MemeArenaSession.findOne({ status: { $in: ['Voting', 'LastVoting'] } });
     if (!activeSession) {

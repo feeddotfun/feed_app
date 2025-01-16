@@ -14,7 +14,6 @@ import {
   const actionHeaders = {
     ...createActionHeaders(),
     'X-Action-Version': '1',
-    'X-Blockchain-Ids': process.env.BLOCKCHAIN_ID!,
     'Access-Control-Expose-Headers': 'X-Blockchain-Ids, X-Action-Version',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
