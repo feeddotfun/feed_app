@@ -250,6 +250,26 @@ export class MemeFundSDK {
         }
     }
 
+    async getClaimAvailableTime(memeUuid: string): Promise<BN> {
+        try {
+            const { memeId } = uuidToMemeIdAndBuffer(memeUuid);
+            const [registryPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("registry"), Buffer.from(memeId)],
+                this.program.programId
+            );
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );    
+            const registry = await this.program.account.memeRegistry.fetch(registryPda);
+            const state = await this.program.account.state.fetch(statePDA);
+    
+            return new BN(registry.endTime).add(state.tokenClaimAvailableTime);
+        } catch {
+            throw new Error('Error getting claim available time');
+        }
+    }
+
     async claim(memeUuid: string, contributor: string, mintAddress: string) {
         try {
             const { memeId, buffer: memeIdBuffer } = uuidToMemeIdAndBuffer(memeUuid);

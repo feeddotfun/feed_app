@@ -304,6 +304,8 @@ export async function startLastVotingOnSession(sessionId: string) {
       throw new Error('Failed to schedule contributing end');
     }
 
+    const claimAvailableTime = (await sdk.getClaimAvailableTime(winnerMeme.memeProgramId)).toNumber() + 60
+
     const updatedSession = await MemeArenaSession.findByIdAndUpdate(
       sessionId,
       {
@@ -312,7 +314,7 @@ export async function startLastVotingOnSession(sessionId: string) {
         winnerMeme: winnerMeme._id,
         contributeEndTime: contributeTimerResult.scheduledTime,
         nextSessionStartTime: contributeTimerResult.nextSessionTime,
-        claimAvailableTime: Math.floor((contributeTimerResult.scheduledTime.getTime() + config.tokenClaimDelay) / 1000),
+        claimAvailableTime: claimAvailableTime,
         lastUpdateTime: now,
         totalContributions: 0
       },
