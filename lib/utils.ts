@@ -5,7 +5,6 @@ import { AINewsLabItem, MemeArenaSessionData, MemeContributionData, MemeData } f
 import BN from "bn.js";
 import { formatDistanceToNow } from "date-fns";
 import SSEManager from "./sse/sse-manager";
-import { headers } from "next/headers";
 
 const TOKEN_DECIMALS = 6;
 
@@ -157,27 +156,6 @@ export async function getIpAddress(request: Request): Promise<string> {
   
   const forwardedFor = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
-  
-  return (forwardedFor?.split(',')[0].trim()) || 
-         realIp || 
-         '127.0.0.1';
-}
-
-export async function getIpAddressWithHeader(): Promise<string> {
-  if (process.env.NODE_ENV === 'development') {
-    return '127.0.0.1';
-  }
-
-  const headersList = await headers();
-
-  // Cloudflare proxy
-  const cfConnectingIp = headersList.get('cf-connecting-ip');
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-  
-  const forwardedFor = headersList.get('x-forwarded-for');
-  const realIp = headersList.get('x-real-ip');
   
   return (forwardedFor?.split(',')[0].trim()) || 
          realIp || 

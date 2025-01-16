@@ -10,7 +10,7 @@ import SystemConfig from "../database/models/system-config.model";
 import MemeVote from "../database/models/meme-vote.model";
 
 // ** SSE & Services
-import { getIpAddressWithHeader, sendUpdate } from "@/lib/utils";
+import { sendUpdate } from "@/lib/utils";
 import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
 
 // ** Utils
@@ -21,6 +21,7 @@ import { ContributeMemeParams, CreateMemeParams, MemeArenaData, MemeData, VoteMe
 import { IMeme, IMemeArenaSession, IMemeContribution } from "../database/types";
 import MemeContribution from "../database/models/meme-contribution.model";
 import { MemeFundSDK } from "../meme-fund/fund.sdk";
+import { headers } from "next/headers";
 
 
 async function ensureCollectionsExist(connection: Mongoose) {
@@ -617,4 +618,26 @@ export async function getMemeVoteDetails(memeId: string, sessionId: string) {
     meme,
     session
   };
+}
+
+
+export async function getIpAddressWithHeader(): Promise<string> {
+  if (process.env.NODE_ENV === 'development') {
+    return '127.0.0.1';
+  }
+
+  const headersList = await headers();
+
+  // Cloudflare proxy
+  const cfConnectingIp = headersList.get('cf-connecting-ip');
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+  
+  const forwardedFor = headersList.get('x-forwarded-for');
+  const realIp = headersList.get('x-real-ip');
+  
+  return (forwardedFor?.split(',')[0].trim()) || 
+         realIp || 
+         '127.0.0.1';
 }
