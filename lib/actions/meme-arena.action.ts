@@ -10,7 +10,7 @@ import SystemConfig from "../database/models/system-config.model";
 import MemeVote from "../database/models/meme-vote.model";
 
 // ** SSE & Services
-import { sendUpdate } from "@/lib/utils";
+import { getIpAddressWithHeader, sendUpdate } from "@/lib/utils";
 import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
 
 // ** Utils
@@ -348,6 +348,9 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
   await connectToDatabase();
   const sanitized = sanitize(contributeMemeParams);
   const now = Date.now();
+
+   // Get IP address from request headers
+   const contributorIpAddress = await getIpAddressWithHeader();
  
   const dbSession = await mongoose.startSession();
   try {
@@ -368,7 +371,7 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
  
     const existingContributionWithIp = await MemeContribution.findOne({
       meme: sanitized.meme,
-      contributorIpAddress: sanitized.contributorIpAddress
+      contributorIpAddress,
     }).session(dbSession);
  
     if (existingContributionWithIp) {
@@ -386,6 +389,7 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
  
     const [newContribution] = await MemeContribution.create([{
       ...sanitized,
+      contributorIpAddress,
       createdAt: new Date()
     }], { session: dbSession });
 

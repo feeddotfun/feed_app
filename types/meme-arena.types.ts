@@ -73,7 +73,7 @@ export interface ContributeMemeParams {
     session: string;
     meme: string;
     contributor: string;
-    contributorIpAddress: string;
+    //contributorIpAddress: string;
     amount: number;
 }
 

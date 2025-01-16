@@ -208,12 +208,10 @@ export function useWinnerMeme(
         }
 
         // Get client IP and create contribution record
-        const contributorIp = await getClientIp();
         await createMemeContribution({
           meme: meme.id,
           session: session.id,
           contributor: publicKey.toString(),
-          contributorIpAddress: contributorIp,
           amount: lamports.toNumber()
         });
 
