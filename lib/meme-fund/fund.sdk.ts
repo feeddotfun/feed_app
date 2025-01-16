@@ -132,6 +132,22 @@ export class MemeFundSDK {
             const modifyComputeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
                 units: 700000
             });
+            
+            console.log('Vault PDA:', vaultPda.toBase58());
+            console.log('Vault Account Lamports:', lamports);
+            console.log('Lamports for Buy:', lamportsForBuy.toString());
+            
+            console.log('Global Account Details:', {
+                initialVirtualSolReserves: globalAccount.initialVirtualSolReserves.toString(),
+                initialVirtualTokenReserves: globalAccount.initialVirtualTokenReserves.toString(),
+                initialRealTokenReserves: globalAccount.initialRealTokenReserves.toString(),
+            });
+
+
+            console.log('Buy Amount SOL:', buyAmountSol.toString());
+            console.log('Initial Buy Price:', buyAmount.toString());
+            console.log('Buy Amount with Slippage:', buyAmountWithSlippage.toString());
+
 
             let tokenMetadata = await this.createTokenMetadata(createTokenMetadata);
 
@@ -167,6 +183,11 @@ export class MemeFundSDK {
             };
         }
         catch (error) {
+            console.error('Start Meme Error:', error);
+            if (error instanceof Error) {
+                console.error('Error Message:', error.message);
+                console.error('Error Stack:', error.stack);
+            }
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to create token'

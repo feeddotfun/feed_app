@@ -476,6 +476,7 @@ export async function endContributingAndStartNewSession(sessionId: string) {
       throw new Error(`Token creation failed: ${tokenResult.error}`);
     }
     
+    console.log(tokenResult)
     const vaultTokens = await sdk.getVaultTokenAccount(
       tokenResult.mintAddress!,
       winner.memeProgramId
