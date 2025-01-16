@@ -143,28 +143,23 @@ export const transformInvestment = (contribution: any) => ({
   }
 });
 
-export function getIpAddress(req: Request): string {
-  // Vercel-specific headers
-  const forwarded = req.headers.get('x-forwarded-for');
-  const vercelIp = req.headers.get('x-real-ip');
-
-  // True IP address from x-forwarded-for or x-real-ip
-  if (forwarded) {
-    // x-forwarded-for can contain multiple IPs, get the first one
-    return forwarded.split(',')[0].trim();
-  }
-
-  if (vercelIp) {
-    return vercelIp;
-  }
-
-  // Local development fallback
+export async function getIpAddress(request: Request): Promise<string> {
   if (process.env.NODE_ENV === 'development') {
     return '127.0.0.1';
   }
 
-  // Final fallback
-  return 'unknown';
+  // Cloudflare proxy
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+  
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  
+  return (forwardedFor?.split(',')[0].trim()) || 
+         realIp || 
+         '127.0.0.1';
 }
 
 export const formatCreatedTime = (date: string) => {
