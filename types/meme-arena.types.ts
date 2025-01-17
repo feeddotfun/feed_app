@@ -28,6 +28,7 @@ export interface MemeArenaSessionData extends BaseEntity {
     nextSessionStartTime?: Date;
     contributeEndTime?: Date;
     totalContributions: number;
+    remainingContributions: number;
     contributorCount: number;
     tokenMintAddress?: string;   
     tx?: string; 

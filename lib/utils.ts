@@ -79,6 +79,7 @@ export function transformSession(session: IMemeArenaSession): MemeArenaSessionDa
     nextSessionStartTime: session.nextSessionStartTime,    
     contributeEndTime: session.contributeEndTime,   
     totalContributions: session.totalContributions, 
+    remainingContributions: session.remainingContributions,
     contributorCount: session.contributorCount || 0,
     tokenMintAddress: session.tokenMintAddress,
     tx: session.tx || '',

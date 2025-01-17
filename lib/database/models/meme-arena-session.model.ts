@@ -48,6 +48,7 @@ const MemeArenaSessionSchema = new Schema({
     },
     initialVaultTokens: { type: Number, default: 0},
     totalContributions: { type: Number, default: 0 },
+    remainingContributions: { type: Number, default: 1.4 * 1_000_000_000 }, // 1.4 just devnet
     contributorCount: { type: Number, default: 0},
     tokenMintAddress: { type: String },
     tx: { type: String },

@@ -5,25 +5,33 @@ export const formatSol = (value: number): string => `${value} SOL`;
 export const SETTINGS_CONFIG = {
   minContributionSol: {
     title: "Minimum Contribution",
-    description: "Minimum amount that can be contributed per transaction",
+    description: "Minimum amount that can be contributed per transaction (It's low because devnet)",
     iconType: "sol",
     format: formatSol,
     category: 'investment',
-    options: [0.1, 0.2, 0.3, 0.5].map(value => ({
+    options: [0.1, 0.2, 0.3, 0.4].map(value => ({
       value,
       label: `${value} SOL`
     }))
+    // options: [0.1, 0.2, 0.3, 0.5].map(value => ({
+    //   value,
+    //   label: `${value} SOL`
+    // }))
   },
   maxContributionSol: {
     title: "Maximum Contribution",
-    description: "Maximum amount that can be contributed per transaction",
+    description: "Maximum amount that can be contributed per transaction (It's low because devnet)",
     iconType: "sol",
     format: formatSol,
     category: 'investment',
-    options: [0.5, 1, 1.5, 2].map(value => ({
+    options: [0.5, 0.6, 0.7, 1.4].map(value => ({
       value,
       label: `${value} SOL`
     }))
+    // options: [0.5, 1, 1.5, 2].map(value => ({
+    //   value,
+    //   label: `${value} SOL`
+    // }))
   },
   tokenClaimDelay: {
     title: "Token Claim Delay",

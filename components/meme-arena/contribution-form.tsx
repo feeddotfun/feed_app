@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import SolIcon from '@/components/ui/solana-icon';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Alert, AlertDescription } from '../ui/alert';
 
 interface ContributionFormProps {
   isEligible: boolean;  
@@ -11,6 +13,7 @@ interface ContributionFormProps {
   maxContributionSol: number;
   eligibilityError?: string | null;
   isContributing: boolean;
+  remainingContributions: number;
   handleContribute: () => Promise<void>;
   purchaseAmount: string;
   setPurchaseAmount: (amount: string) => void;
@@ -22,12 +25,17 @@ export const ContributionForm: React.FC<ContributionFormProps> = ({
   minContributionSol,
   maxContributionSol,
   isContributing,
+  remainingContributions,
   eligibilityError,
   handleContribute,
   purchaseAmount,
   setPurchaseAmount,
   connected
 }) => {
+  const maxAllowedContribution = Math.min(
+    maxContributionSol,
+    remainingContributions / LAMPORTS_PER_SOL
+) ;
   if (!connected) {
     return (
       <motion.div
@@ -65,6 +73,12 @@ export const ContributionForm: React.FC<ContributionFormProps> = ({
       transition={{ delay: 0.9, duration: 0.5 }}
       className="space-y-4"
     >
+      <Alert className="bg-primary/5 border-primary/20">
+        <AlertDescription>
+          Remaining fund limit: {(remainingContributions / LAMPORTS_PER_SOL).toFixed(2)} SOL
+        </AlertDescription>
+      </Alert>
+      
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {[0.1, 0.3, 0.5, 1].map((amount) => (
           <Button

@@ -25,6 +25,7 @@ export interface ISystemConfig  {
     minContributionSol: number;
     maxContributionSol: number;
     tokenClaimDelay: number;
+    totalFundLimit: number;
     getOptionsForSetting(settingKey: string): number[];
 }
 
@@ -59,6 +60,7 @@ export interface IMemeArenaSession extends Document {
     contributeEndTime?: Date;
     claimAvailableTime?: number,
     totalContributions: number;
+    remainingContributions: number;
     contributorCount: number,
     tokenMintAddress?: string;
     tx?: string;

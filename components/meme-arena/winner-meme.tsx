@@ -40,7 +40,7 @@ export default function WinnerMeme({
     handleContribute,
     purchaseAmount,
     setPurchaseAmount
-  } = useWinnerMeme(meme, session, publicKey, signTransaction);
+  } = useWinnerMeme(meme, session, systemConfig.maxContributionSol, publicKey, signTransaction);
 
   if (!isVisible) return null;
 
@@ -77,6 +77,7 @@ export default function WinnerMeme({
                     minContributionSol={systemConfig.minContributionSol}
                     maxContributionSol={systemConfig.maxContributionSol}                   
                     isContributing={isContributing}
+                    remainingContributions={session.remainingContributions}
                     handleContribute={handleContribute}
                     purchaseAmount={purchaseAmount}
                     setPurchaseAmount={setPurchaseAmount}

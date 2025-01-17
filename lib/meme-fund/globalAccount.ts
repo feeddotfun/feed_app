@@ -40,11 +40,19 @@ export class GlobalAccount {
       return new BN(0);
     }
 
-    let n = this.initialVirtualSolReserves.mul(this.initialVirtualTokenReserves);
-    let i = this.initialVirtualSolReserves.add(amount);
-    let r = n.div(i).add(new BN(1));
-    let s = this.initialVirtualTokenReserves.sub(r);
-    return s < this.initialRealTokenReserves ? s : this.initialRealTokenReserves;
+    // Calculate n = virtualSolReserves * virtualTokenReserves
+    const n = this.initialVirtualSolReserves.mul(this.initialVirtualTokenReserves);
+
+    // Calculate i = virtualSolReserves + amount
+    const i = this.initialVirtualSolReserves.add(amount);
+
+    const r = n.div(i).muln(1);
+
+    // Calculate s = virtualTokenReserves - r
+    const s = this.initialVirtualTokenReserves.sub(r);
+
+    // Return the minimum between s and realTokenReserves
+    return BN.min(s, this.initialRealTokenReserves);
   }
 
   public static fromBuffer(buffer: Buffer): GlobalAccount {

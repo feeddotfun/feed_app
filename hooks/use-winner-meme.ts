@@ -5,13 +5,13 @@ import BN from 'bn.js'
 import { MemeData, MemeArenaSessionData } from "@/types"
 import { createMemeContribution } from '@/lib/actions/meme-arena.action'
 
-const MAX_CONTRIBUTION_SOL = 1;
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000;
 
 export function useWinnerMeme(
   meme: MemeData, 
   session: MemeArenaSessionData, 
+  maxContributionSol: number,
   publicKey?: string,
   signTransaction?: (transaction: Transaction) => Promise<Transaction>
 ) {
@@ -108,27 +108,42 @@ export function useWinnerMeme(
 
   const setPurchaseAmountWithLimit = useCallback((amount: string) => {
     const numericAmount = parseFloat(amount);
-    if (!isNaN(numericAmount) && numericAmount <= MAX_CONTRIBUTION_SOL) {
-      setPurchaseAmount(amount);
-    } else if (numericAmount > MAX_CONTRIBUTION_SOL) {
-      setPurchaseAmount(MAX_CONTRIBUTION_SOL.toString());
+    if (!session.remainingContributions) {
+      setPurchaseAmount("");
+      return;
     }
-  }, []);
-
-  const getClientIp = async (): Promise<string> => {
-    try {
-      const response = await fetch('/api/meme-arena/ip');
-      const data = await response.json();
-      return data.ip;
-    } catch (error) {
-      console.error('Failed to get IP:', error);
-      return process.env.NODE_ENV === 'development' ? '127.0.0.1' : 'unknown';
+    const maxAllowedContribution = Math.min(
+      maxContributionSol,
+      session.remainingContributions / LAMPORTS_PER_SOL
+    );  
+  
+    if (!isNaN(numericAmount)) {
+      if (numericAmount <= maxAllowedContribution) {
+        setPurchaseAmount(amount);
+      } else {
+        setPurchaseAmount(maxAllowedContribution.toString());
+      }
     }
-  };
+  }, [maxContributionSol, session.remainingContributions]);
 
   // Contribution handler
   const handleContribute = useCallback(async () => {
-    if (!publicKey || !signTransaction || !isEligible || !purchaseAmount || isNaN(parseFloat(purchaseAmount))) {
+    if (!publicKey || !signTransaction || !isEligible || !purchaseAmount) {
+      return;
+    }
+
+    const contributionAmount = parseFloat(purchaseAmount);
+    if (!session.remainingContributions) {
+      throw new Error('No remaining contributions allowed');
+    }
+    const remainingInSol = session.remainingContributions / LAMPORTS_PER_SOL;
+    const maxAllowedContribution = Math.min(maxContributionSol, remainingInSol);
+
+    if (isNaN(contributionAmount) || 
+      contributionAmount <= 0 || 
+      contributionAmount > maxAllowedContribution
+    ) {
+      console.error('Invalid contribution amount');
       return;
     }
 
@@ -137,9 +152,8 @@ export function useWinnerMeme(
 
     while (retries < MAX_RETRIES) {
       try {
-        const contributionAmount = Math.min(parseFloat(purchaseAmount), MAX_CONTRIBUTION_SOL);
         const lamports = new BN(Math.floor(contributionAmount * LAMPORTS_PER_SOL));
-
+    
         // Get transaction from API
         const contributeResponse = await fetch('/api/meme-arena/contribute', {
           method: 'POST',
@@ -221,14 +235,12 @@ export function useWinnerMeme(
         break;
 
       } catch (error) {
-        retries++;
-        if (retries < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-          continue;
-        }
         console.error('Contribution error:', error);
-        setIsContributing(false);
+        
         throw error;
+      }
+      finally {
+        setIsContributing(false);
       }
     }
   }, [
@@ -236,10 +248,12 @@ export function useWinnerMeme(
     publicKey, 
     purchaseAmount, 
     session.id, 
+    session.remainingContributions,
     signTransaction, 
     connection, 
     isEligible, 
-    checkEligibility
+    checkEligibility,
+    maxContributionSol
   ]);
 
   return {
@@ -251,7 +265,7 @@ export function useWinnerMeme(
     isEligible,
     eligibilityError,
     handleContribute,
-    MAX_CONTRIBUTION_SOL,
+    maxContributionSol,
     isContributing
   }
 }

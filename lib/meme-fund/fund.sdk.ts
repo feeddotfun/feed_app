@@ -131,24 +131,8 @@ export class MemeFundSDK {
             const buyAmountWithSlippage = calculateWithSlippageBuy(buyAmount, this.SLIPPAGE_BASIS_POINTS);        
             const modifyComputeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
                 units: 700000
-            });
-            
-            console.log('Vault PDA:', vaultPda.toBase58());
-            console.log('Vault Account Lamports:', lamports);
-            console.log('Lamports for Buy:', lamportsForBuy.toString());
-            
-            console.log('Global Account Details:', {
-                initialVirtualSolReserves: globalAccount.initialVirtualSolReserves.toString(),
-                initialVirtualTokenReserves: globalAccount.initialVirtualTokenReserves.toString(),
-                initialRealTokenReserves: globalAccount.initialRealTokenReserves.toString(),
-            });
-
-
-            console.log('Buy Amount SOL:', buyAmountSol.toString());
-            console.log('Initial Buy Price:', buyAmount.toString());
-            console.log('Buy Amount with Slippage:', buyAmountWithSlippage.toString());
-
-
+            });            
+ 
             let tokenMetadata = await this.createTokenMetadata(createTokenMetadata);
 
             const tx = await this.program.methods.startMeme(
@@ -182,12 +166,13 @@ export class MemeFundSDK {
                 tx
             };
         }
-        catch (error) {
-            console.error('Start Meme Error:', error);
-            if (error instanceof Error) {
-                console.error('Error Message:', error.message);
-                console.error('Error Stack:', error.stack);
-            }
+        catch (error: any) {
+            console.error('Detailed Error Information:', {
+                errorName: error?.constructor.name,
+                message: error?.message,
+                stack: error?.stack,
+                transactionDetails: error.transactionMessage || 'No transaction details'
+            });
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to create token'

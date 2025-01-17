@@ -130,7 +130,8 @@ export const handleMemeArenaEvents = (data: any, queryClient: QueryClient) => {
               session: {
                 ...old.items[0].session,
                 totalContributions: data.session.totalContributions,
-                contributorCount: data.session.contributorCount
+                contributorCount: data.session.contributorCount,
+                remainingContributions: data.session.remainingContributions,
               }
             }]
           };

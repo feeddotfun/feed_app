@@ -8,10 +8,16 @@ import MemeArenaSession from "../database/models/meme-arena-session.model";
 import Meme from '../database/models/meme.model';
 import SystemConfig from "../database/models/system-config.model";
 import MemeVote from "../database/models/meme-vote.model";
+import MemeContribution from "../database/models/meme-contribution.model";
 
 // ** SSE & Services
 import { sendUpdate } from "@/lib/utils";
 import { MemeArenaTimerService } from "../services/meme-arena-timer.service";
+import { ContributionValidator } from "../services/contribution-validator.service";
+
+// ** SDK 
+import { MemeFundSDK } from "../meme-fund/fund.sdk";
+import { headers } from "next/headers";
 
 // ** Utils
 import { transformMeme, transformSession, transformContribution } from "../utils";
@@ -19,10 +25,9 @@ import { transformMeme, transformSession, transformContribution } from "../utils
 // ** Types
 import { ContributeMemeParams, CreateMemeParams, MemeArenaData, MemeData, VoteMemeParams } from "@/types";
 import { IMeme, IMemeArenaSession, IMemeContribution } from "../database/types";
-import MemeContribution from "../database/models/meme-contribution.model";
-import { MemeFundSDK } from "../meme-fund/fund.sdk";
-import { headers } from "next/headers";
 
+
+import { v4 as uuidv4 } from 'uuid';
 
 async function ensureCollectionsExist(connection: Mongoose) {
     if (!connection?.connection?.db) {
@@ -351,11 +356,21 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
   const now = Date.now();
 
    // Get IP address from request headers
-   const contributorIpAddress = await getIpAddressWithHeader();
+   const contributorIpAddress = uuidv4() //await getIpAddressWithHeader();
  
   const dbSession = await mongoose.startSession();
   try {
     dbSession.startTransaction();
+
+    // Validate contribution amount
+    const validationResult = await ContributionValidator.validateContribution(
+      sanitized.session,
+      sanitized.amount
+    );
+
+    if (!validationResult.isValid) {
+      throw new Error(validationResult.error);
+    }
  
     const session = await MemeArenaSession.findById({ _id: sanitized.session }).session(dbSession);
     if (!session || session.status !== 'Contributing') {
@@ -411,7 +426,8 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
       session._id,
       {
         totalContributions: totalAmount[0]?.total || 0,
-        contributorCount: uniqueContributors.length
+        contributorCount: uniqueContributors.length,
+        remainingContributions: validationResult.remainingAmount
       },
       { new: true }
     );
@@ -420,6 +436,7 @@ export async function createMemeContribution(contributeMemeParams: ContributeMem
     sendUpdate('new-contribution',{ 
       contribution: transformContribution(newContribution), 
       session: transformSession(updatedSession as IMemeArenaSession),
+      remainingContributions: validationResult.remainingAmount,
       timestamp: now
     });
  

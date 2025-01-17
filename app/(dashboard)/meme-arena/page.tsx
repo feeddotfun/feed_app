@@ -8,7 +8,7 @@ import { getSystemConfig } from "@/lib/actions/community-setting.action";
 export default async function MemeArenaPage() {
   const queryClient = new QueryClient();
   const memeArenaKeys = new QueryKeys('memeArena');
-  await initializeSystem()
+  //await initializeSystem()
   // Get initial data for both meme arena and config
   const [memeArenaData, configData] = await Promise.all([
     getActiveSessionMemes(),

@@ -1,3 +1,4 @@
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { ISystemConfig } from '../types';
 import { Model, Schema, model, models, Document } from 'mongoose'
 
@@ -43,13 +44,13 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument>({
         type: Number,
         default: 0.1,
         min: 0.1,
-        options: [0.1, 0.2, 0.3, 0.5]
+        options: [0.1, 0.2, 0.3, 0.4] // mainnet [0.1, 0.2, 0.3, 0.5]
       },
       maxContributionSol: {
         type: Number,
-        default: 1,
-        min: 0.5,
-        options: [0.5, 1, 1.5, 2]
+        default: 0.5, //  mainnet 1
+        min: 0.2, //  mainnet 0.5
+        options: [0.5, 0.6, 0.7, 0.8]  // mainnet [0.5, 1, 1.5, 2]
       },
       tokenClaimDelay: {
         type: Number,
@@ -57,7 +58,13 @@ const SystemConfigSchema = new Schema<ISystemConfigDocument>({
         min: 15 * 60 * 1000,
         max: 90 * 60 * 1000,
         options: [15, 30, 45, 90].map(min => min * 60 * 1000)
-      }
+      },
+      totalFundLimit: {
+        type: Number,
+        default: 1.4 * LAMPORTS_PER_SOL, // 1.4 SOL in lamports (just for devnet because pump program global token reserve different to mainnet)
+        min: 1 * LAMPORTS_PER_SOL,
+        max: 2 * LAMPORTS_PER_SOL,
+    },
 }, { timestamps: true })
 
 SystemConfigSchema.statics.getConfig = async function(): Promise<ISystemConfigDocument> {
