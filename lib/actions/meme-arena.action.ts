@@ -466,7 +466,7 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     if (session.totalContributions === 0) 
     {
       const config = await SystemConfig.getConfig();
-      const MIN_CONTRIBUTION = config.minContributionSol * LAMPORTS_PER_SOL;
+      const MIN_CONTRIBUTION = (config.minContributionSol * LAMPORTS_PER_SOL).toString();
       const sdk = new MemeFundSDK();
         try {
           const winnerMeme = await Meme.findById(session.winnerMeme);
