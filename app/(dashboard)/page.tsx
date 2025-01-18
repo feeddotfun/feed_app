@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 
 import DashboardContent from "@/components/dashboard";
 import PageContainer from "@/components/layout/page-container";

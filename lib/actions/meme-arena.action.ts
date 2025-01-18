@@ -28,6 +28,7 @@ import { IMeme, IMemeArenaSession, IMemeContribution } from "../database/types";
 
 
 import { v4 as uuidv4 } from 'uuid';
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 async function ensureCollectionsExist(connection: Mongoose) {
     if (!connection?.connection?.db) {
@@ -460,6 +461,30 @@ export async function endContributingAndStartNewSession(sessionId: string) {
     const session = await MemeArenaSession.findById({ _id: sessionId }).session(dbSession);
     if (!session || session.status !== 'Contributing') {
       throw new Error('Invalid session status');
+    }
+
+    if (session.totalContributions === 0) 
+    {
+      const config = await SystemConfig.getConfig();
+      const MIN_CONTRIBUTION = config.minContributionSol * LAMPORTS_PER_SOL;
+      const sdk = new MemeFundSDK();
+        try {
+          const winnerMeme = await Meme.findById(session.winnerMeme);
+          if (!winnerMeme) {
+            throw new Error('Winner meme not found');
+          }
+          const result = await sdk.authorityContribute(
+            winnerMeme.memeProgramId,
+            MIN_CONTRIBUTION.toString()
+          );
+          if (!result.success) {
+            console.error('Authority contribution failed:', result.error);
+            throw new Error('Authority contribution failed');
+          }
+        }
+        catch(error) {
+          console.error('Authority emergency contribution failed:', error);
+        }
     }
 
     sendUpdate('token-creation-started', {

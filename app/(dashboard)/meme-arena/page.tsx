@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import MemeArena from "@/components/meme-arena";
 import { getActiveSessionMemes, initializeSystem } from "@/lib/actions/meme-arena.action";
 import { QueryKeys } from "@/lib/query/core/query-keys";

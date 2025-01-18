@@ -72,12 +72,23 @@ export async function updateProgramConfig(params: {
 }) {
   try {
     const sdk = new MemeFundSDK();
+
+    let adjustedDuration = params.fundDuration;
+    if (adjustedDuration) {
+      const variance = Math.floor(Math.random() * 60) - 30; // -30 to +30 seconds
+      adjustedDuration += variance;
+      
+      const MIN_DURATION = 60;
+      if (adjustedDuration < MIN_DURATION) {
+        adjustedDuration = MIN_DURATION;
+      }
+    }
     
     // Convert SOL amounts to lamports
     const updates = {
       minBuyAmount: params.minBuyAmount ? new BN(params.minBuyAmount * LAMPORTS_PER_SOL) : undefined,
       maxBuyAmount: params.maxBuyAmount ? new BN(params.maxBuyAmount * LAMPORTS_PER_SOL) : undefined,
-      fundDuration: params.fundDuration ? new BN(params.fundDuration) : undefined
+      fundDuration: adjustedDuration ? new BN(adjustedDuration) : undefined
     }
     
     const result = await sdk.updateSafeLimits(updates);

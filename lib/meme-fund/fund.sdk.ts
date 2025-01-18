@@ -68,6 +68,26 @@ export class MemeFundSDK {
         return { tx, lastValidBlockHeight };
     }
 
+    async authorityContribute(memeUuid: string, amount: string): Promise<{ success: boolean; error?: any; tx?: string; }> {
+        try {
+          const { memeId } = uuidToMemeIdAndBuffer(memeUuid);
+          const tx = await this.program.methods.contribute(memeId, new BN(amount))
+          .accounts({
+            feeRecipient: this.feeRecipient,
+            contributor: this.authorityWallet.publicKey            
+          })
+          .rpc();
+          console.log(tx)
+          return { success: true, tx };
+        } catch (error) {
+          console.error('Authority contribution failed:', error);
+          return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Authority contribution failed' 
+          };
+        }
+      }
+
     async startMeme(memeUuid: string, createTokenMetadata: CreateTokenMetadata): Promise<TokenCreationResult> {
         try {
             const mint = Keypair.generate();
