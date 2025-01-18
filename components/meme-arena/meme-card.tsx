@@ -33,7 +33,7 @@ export default function MemeCard({
       const tweetText = encodeURIComponent(
         `📰 News meets Memes! Check out ${meme.ticker} on feed.fun\n\n` +
         `${meme.name} ($${meme.ticker})\n\n` +
-        `Where Community Turns News into Memes 🌟\n\n` +
+        `Where Community Turns News into Memes🌟\n\n` +
         `@feeddotfun @pumpdotfun #memes #airdrop @solana`
       );
       const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/meme-arena/share?memeId=${meme.id}&sessionId=${meme.session}`; 
