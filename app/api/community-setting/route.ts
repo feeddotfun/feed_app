@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     
     //!! just testing
-    const clientIp = (Math.random() + 1).toString(36)
+    const clientIp = (Math.random() + 1).toString(36) // getIpAddress(req);
 
     const result = await submitVote({
       ...body,

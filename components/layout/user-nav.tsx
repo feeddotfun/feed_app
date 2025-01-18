@@ -5,6 +5,7 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useState, useEffect, useCallback } from 'react';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import SolIcon from '../ui/solana-icon';
 
 export function UserNav() {
   const { publicKey, disconnect } = useWallet();
@@ -71,8 +72,8 @@ export function UserNav() {
         {publicKey.toString().slice(0, 4) + '...' + publicKey.toString().slice(-4)}
       </span>
       {balance !== null && (
-        <span className="text-sm font-medium">
-          {balance.toFixed(2)} SOL
+        <span className="text-sm font-medium flex items-center gap-1">
+          {balance.toFixed(2)} <SolIcon className="w-3 h-3 inline-block" />
         </span>
       )}
       <Button 

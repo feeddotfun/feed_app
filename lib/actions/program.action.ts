@@ -1,6 +1,7 @@
 'use server'
-import { PublicKey } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import { MemeFundSDK } from "../meme-fund/fund.sdk";
+import { BN } from 'bn.js';
 
 export async function memeRegistry(memeId: string) {
     const sdk = new MemeFundSDK();
@@ -63,3 +64,32 @@ export async function memeClaim(
       throw new Error('Claim action error');
     }
   }
+
+export async function updateProgramConfig(params: {
+  minBuyAmount?: number; // SOL Amount
+  maxBuyAmount?: number; // SOL Amount
+  fundDuration?: number; // Seconds Contribution Time Limit
+}) {
+  try {
+    const sdk = new MemeFundSDK();
+    
+    // Convert SOL amounts to lamports
+    const updates = {
+      minBuyAmount: params.minBuyAmount ? new BN(params.minBuyAmount * LAMPORTS_PER_SOL) : undefined,
+      maxBuyAmount: params.maxBuyAmount ? new BN(params.maxBuyAmount * LAMPORTS_PER_SOL) : undefined,
+      fundDuration: params.fundDuration ? new BN(params.fundDuration) : undefined
+    }
+    
+    const result = await sdk.updateSafeLimits(updates);
+    const updatedConfig = await sdk.getStateConfig();
+    console.log(updatedConfig.state)
+
+    return result;
+  }
+  catch (error) {
+    console.error('Program config update failed:', error);
+    throw new Error(error instanceof Error ? error.message : 'Config update failed');
+  }
+}
+
+

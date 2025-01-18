@@ -12,9 +12,11 @@ import { cn } from "@/lib/utils";
 import { useAINewsLab } from '@/lib/query/ai-news-lab/hooks';
 import { AINewsLabSkeleton } from '../skeletons';
 import { useMemeArena } from '@/lib/query/meme-arena/hooks';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 
 export default function NewsLabContent() {
+  const { connected } = useWallet()
   const [imageLoaded, setImageLoaded] = React.useState<{[key: string]: boolean}>({});
   const [loadingItems, setLoadingItems] = React.useState<{[key: string]: boolean}>({});
   
@@ -159,7 +161,7 @@ export default function NewsLabContent() {
                     <Button
                       className="w-full bg-primary hover:bg-primary/90"
                       onClick={() => handleTransformToMeme(item.id)}
-                      disabled={loadingItems[item.id] || convertMutation.isPending || (memes?.length >= session?.maxMemes)}
+                      disabled={!connected || loadingItems[item.id] || convertMutation.isPending || (memes?.length >= session?.maxMemes)}
                     >
                       {loadingItems[item.id] ? (
                         <span className="flex items-center gap-2">

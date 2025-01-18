@@ -75,7 +75,10 @@ export async function createMemeFromNews(sessionId: string, newsId: string) {
 
     await dbSession.commitTransaction();
 
-    return memeData;
+    return {
+      ...memeData,
+      isWinner: false
+    };
 
   } catch (error) {
     await dbSession.abortTransaction();

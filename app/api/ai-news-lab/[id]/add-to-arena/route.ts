@@ -27,15 +27,19 @@ export async function POST(
         });
       }
     
-      const meme = await createMemeFromNews(sessionData.session.id, id);
+    const meme = await createMemeFromNews(sessionData.session.id, id);
 
     sendUpdate('news-converted',{
       data: {
-        newsId: id,
-        meme: meme,       
+        newsId: id,     
         timestamp: Date.now()
       }
     });
+
+    sendUpdate('new-meme', {
+      meme
+    });
+    
     return new Response(JSON.stringify(meme), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

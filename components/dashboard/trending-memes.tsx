@@ -129,7 +129,7 @@ export const TrendingMemes = ({ winners, topVoted }: TrendingMemesProps) => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-5 h-5 text-[#99FF19]" />
-            <h2 className="font-semibold">Last Winning Memes</h2>
+            <h2 className="font-semibold">Latest Winning Memes</h2>
           </div>
           <div className="space-y-3">
             {winners.map((meme) => (
@@ -144,7 +144,7 @@ export const TrendingMemes = ({ winners, topVoted }: TrendingMemesProps) => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <ThumbsUp className="w-5 h-5 text-[#99FF19]" />
-            <h2 className="font-semibold">Most Voted Memes</h2>
+            <h2 className="font-semibold">Top Voted Memes</h2>
           </div>
           <div className="space-y-3">
             {topVoted.map((meme, index) => (

@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Users, Timer, Vote, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn, convertLamportsToSol, formatPhaseString, formatTime } from "@/lib/utils";
+import SolIcon from "../ui/solana-icon";
 
 interface SessionStatsProps {
   status: string;
@@ -96,7 +97,7 @@ export const SessionStats = ({
       {
         label: "Total Contributions",
         value: `${convertLamportsToSol(totalContributions)} SOL`,
-        icon: () => <span className="text-lg sm:text-xl text-primary">◎</span>,
+        icon: () => <SolIcon className="w-4 h-3"/>,
       }
     ] : [])
   ];

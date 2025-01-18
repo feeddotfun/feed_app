@@ -14,6 +14,7 @@ import { sendUpdate } from "./sse";
 
 // ** Constants
 import { VOTING_PERIOD, SETTINGS_CONFIG } from "@/constants/community-setting.config";
+import { updateProgramConfig } from "./program.action";
 
 export async function getSystemConfig() {
   await connectToDatabase();
@@ -117,31 +118,20 @@ export async function submitVote(data: {
 
     await dbSession.commitTransaction();
 
-
-    // Get all votes for this setting to calculate if this is now the winning option
     const allVotes = await SystemConfigVotes.find({
       settingKey: sanitized.settingKey,
       lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
     });
-
-    const winningVote = allVotes.reduce((prev, current) => 
-      current.votes > prev.votes ? current : prev
-    );
-
-    // If this is the winning option, update the system config
-    if (winningVote.optionValue === sanitized.selectedValue) {
-      await SystemConfig.findOneAndUpdate(
-        {},
-        { [sanitized.settingKey]: sanitized.selectedValue }
-      );
-
-      // Notify clients of the config update
-      sendUpdate({
-        type: 'config-update',
-        setting: sanitized.settingKey,
-        value: sanitized.selectedValue
-      })
-    }
+    
+     // Notify clients of the config update
+     sendUpdate({
+      type: 'vote-update',
+      data: {
+        settingKey: sanitized.settingKey,
+        vote: allVotes,
+        timestamp: Date.now()
+      }
+    });
 
     return { success: true };
   } catch (error) {
@@ -197,6 +187,22 @@ export async function updateSystemConfigWithWinningVotes() {
         updateData,
         { new: true }
       );
+
+       // Update Solana program config
+       const programUpdates = {
+        minBuyAmount: updateData.minContributionSol,
+        maxBuyAmount: updateData.maxContributionSol,
+        // Convert milliseconds to seconds for the program
+        fundDuration: updateData.fundDuration ? Math.floor(updateData.fundDuration / 1000) : undefined
+      };
+
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(programUpdates).filter(([_, value]) => value !== undefined)
+      );
+
+      if (Object.keys(filteredUpdates).length > 0) {
+        await updateProgramConfig(filteredUpdates);
+      }
 
       // Notify clients of all config updates
       for (const [setting, value] of Object.entries(updateData)) {

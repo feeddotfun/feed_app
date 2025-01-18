@@ -352,8 +352,137 @@ export class MemeFundSDK {
         }
     }
 
+    async updateMaxBuyAmount(newMaxBuyAmount: BN): Promise<{ success: boolean; error?: any, tx?: string }> {
+        try {
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
 
+            const tx = await this.program.methods.updateMaxBuyAmount(newMaxBuyAmount)
+                .accounts({
+                    state: statePDA,
+                    authority: this.authorityWallet.publicKey,
+                })
+                .rpc();
 
+            return { success: true, tx };
+        } catch (error) {
+            return { success: false, error };
+        }
+    }
+
+    async updateMinBuyAmount(newMinBuyAmount: BN): Promise<{ success: boolean; error?: any, tx?: string }> {
+        try {
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
+
+            const tx = await this.program.methods.updateMinBuyAmount(newMinBuyAmount)
+                .accounts({
+                    state: statePDA,
+                    authority: this.authorityWallet.publicKey,
+                })
+                .rpc();
+
+            return { success: true, tx };
+        } catch (error) {
+            return { success: false, error };
+        }
+    }
+
+    async updateFundDuration(newFundDuration: BN): Promise<{ success: boolean; error?: any, tx?: string }> {
+        try {
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
+
+            const tx = await this.program.methods.updateFundDuration(newFundDuration)
+                .accounts({
+                    state: statePDA,
+                    authority: this.authorityWallet.publicKey,
+                })
+                .rpc();
+
+            return { success: true, tx };
+        } catch (error) {
+            return { success: false, error };
+        }
+    }
+
+    async updateSafeLimits(params: {
+        minBuyAmount?: BN;
+        maxBuyAmount?: BN;
+        fundDuration?: BN;
+    }): Promise<{ success: boolean; error?: any }> {
+        try {
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
+
+            let results = [];
+
+            if (params.maxBuyAmount) {
+                const result = await this.updateMaxBuyAmount(params.maxBuyAmount);
+                results.push({ type: 'maxBuyAmount', ...result });
+            }
+
+            if (params.minBuyAmount) {
+                const result = await this.updateMinBuyAmount(params.minBuyAmount);
+                results.push({ type: 'minBuyAmount', ...result });
+            }
+
+            if (params.fundDuration) {
+                const result = await this.updateFundDuration(params.fundDuration);
+                results.push({ type: 'fundDuration', ...result });
+            }
+
+            // Check if any updates failed
+            const hasFailures = results.some(r => !r.success);
+            if (hasFailures) {
+                return {
+                    success: false,
+                    error: {
+                        message: 'Some updates failed',
+                        details: results
+                    }
+                };
+            }
+
+            return {
+                success: true,
+            };
+        } catch (error) {
+            return { success: false, error };
+        }
+    }
+
+    async getStateConfig(): Promise<{ success: boolean; state?: any; error?: any }> {
+        try {
+            const [statePDA] = PublicKey.findProgramAddressSync(
+                [Buffer.from("state")],
+                this.program.programId
+            );
+
+            const state = await this.program.account.state.fetch(statePDA);
+            return {
+                success: true,
+                state: {
+                    minBuyAmount: state.minBuyAmount.toString(),
+                    maxBuyAmount: state.maxBuyAmount.toString(),
+                    fundDuration: state.fundDuration.toString(),
+                    maxFundLimit: state.maxFundLimit.toString(),
+                    commissionRate: state.commissionRate,
+                    tokenClaimAvailableTime: state.tokenClaimAvailableTime.toString()
+                }
+            };
+        } catch (error) {
+            return { success: false, error };
+        }
+    }
 
 
 }

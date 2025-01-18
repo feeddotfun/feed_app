@@ -30,20 +30,17 @@ export default function MemeCard({
 
   const handleShare = async () => {
     try {
-      const shareUrl = `${window.location.origin}/api/meme-arena/share?memeId=${meme.id}&sessionId=${meme.session}`; 
-
-      const actionUrl = `solana-action:${shareUrl}`;
-  
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(actionUrl);
-      } else {
-        const tempInput = document.createElement('input');
-        tempInput.value = actionUrl;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      }
+      const tweetText = encodeURIComponent(
+        `📰 News meets Memes! Check out ${meme.ticker} on feed.fun\n\n` +
+        `${meme.name} ($${meme.ticker})\n\n` +
+        `Where Community Turns News into Memes 🌟\n\n` +
+        `@feeddotfun @pumpdotfun #memes #airdrop @solana`
+      );
+      const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/meme-arena/share?memeId=${meme.id}&sessionId=${meme.session}`; 
+      const actionUrl = `https://dial.to/?action=${encodeURIComponent(`solana-action:${shareUrl}`)}&cluster=devnet`;      
+      const twitterUrl = `https://x.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(actionUrl)}`;
+    
+      window.open(twitterUrl, '_blank', 'noopener,noreferrer');
     } catch  {
       throw new Error('Error sharing')
     }

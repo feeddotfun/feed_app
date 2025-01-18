@@ -16,6 +16,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const last24Hours = new Date();
   last24Hours.setHours(last24Hours.getHours() - 24);
 
+  
   const [
     totalMemes, 
     totalVotes, 
@@ -62,13 +63,12 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     Meme.find({ 
       createdAt: { $gte: last24Hours },
       isWinner: { $ne: true },
-      session: {
-        $in: await MemeArenaSession.find({ 
-          status: { $in: ['Voting', 'LastVoting', 'Contributing', 'Completed'] } 
-        }).distinct('_id')
-      }
     })
-    .populate<{ session: IMemeArenaSession }>('session', 'tokenMintAddress status')
+    .populate<{ session: IMemeArenaSession }>({
+      path: 'session',
+      match: { status: 'Completed' },
+      select: 'tokenMintAddress status'
+    })
     .sort("-totalVotes")
     .limit(3)
     .select("name image totalVotes ticker createdAt session"),
@@ -176,7 +176,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     image: meme.image,
     ticker: meme.ticker,
     votes: meme.totalVotes,
-    mintAddress: meme.session?.tokenMintAddress
+    mintAddress: meme.session?.tokenMintAddress || undefined
   }));
 
   // Transform top voted memes
@@ -187,7 +187,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     ticker: meme.ticker,
     votes: meme.totalVotes,
     date: meme.createdAt.toISOString(),
-    mintAddress: meme.session?.tokenMintAddress
+    ...(meme.session?.status === 'Completed' && meme.isWinner && meme.session?.tokenMintAddress ? 
+      { mintAddress: meme.session.tokenMintAddress } : {})
   }));
 
   return {
