@@ -7,7 +7,8 @@ import {
     Trophy,
     Zap,
     Newspaper,
-    Gift
+    Gift,
+    Droplet
   } from 'lucide-react';
   
   export type Icon = LucideIcon;
@@ -21,5 +22,6 @@ import {
     arrowRight: ArrowRight,
     news: Newspaper,
     airdrop: Gift,
+    faucet: Droplet
   };
   

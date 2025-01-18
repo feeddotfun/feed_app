@@ -40,6 +40,11 @@ export const navigationItems: NavItem[] = [
     title: 'Airdrop Stats',
     href: '/airdrop-stats',
     icon: 'airdrop'
+  },
+  {
+    title: 'Airdrop Faucet',
+    href: '/airdrop-faucet',
+    icon: 'faucet'
   }
   
 ];
