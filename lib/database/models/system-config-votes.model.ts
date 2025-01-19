@@ -17,10 +17,23 @@ const SystemConfigVotesSchema = new Schema({
     lastResetTime: {
         type: Date,
         default: Date.now
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+    votingPeriodId: {
+        type: String,
+        required: true
     }
   });
 
-SystemConfigVotesSchema.index({ settingKey: 1, lastResetTime: 1 });
+SystemConfigVotesSchema.index({ 
+    settingKey: 1, 
+    votingPeriodId: 1, 
+    isActive: 1 
+  });
+
 
 const SystemConfigVotes:  Model<ISystemConfigVotes> = models.SystemConfigVotes || model<ISystemConfigVotes>('SystemConfigVotes', SystemConfigVotesSchema);
 

@@ -34,9 +34,7 @@ export async function getSystemConfigAndVotes() {
   const config = await SystemConfig.getConfig();
   
   const votes = await SystemConfigVotes.find({
-    lastResetTime: { 
-      $gt: new Date(Date.now() - VOTING_PERIOD) 
-    }
+    isActive: true
   });
 
   const mostRecentVote = votes.reduce((latest, current) => 
@@ -71,6 +69,40 @@ export async function submitVote(data: {
   try {
     dbSession.startTransaction();
 
+    let latestVote = await SystemConfigVotes.findOne({
+      isActive: true
+    }).sort({ lastResetTime: -1, _id: -1 });
+
+
+    if (!latestVote) {
+      const now = new Date();
+      const votingPeriodId = now.getTime().toString();
+      
+      const initialVotes = [];
+      for (const [settingKey, setting] of Object.entries(SETTINGS_CONFIG)) {
+        for (const option of setting.options) {
+          initialVotes.push({
+            settingKey,
+            optionValue: option.value,
+            votes: 0,
+            lastResetTime: now,
+            isActive: true,
+            votingPeriodId
+          });
+        }
+      }
+      
+      await SystemConfigVotes.insertMany(initialVotes, { session: dbSession });
+      
+      latestVote = await SystemConfigVotes.findOne({
+        isActive: true
+      }).sort({ lastResetTime: -1, _id: -1 }).session(dbSession);
+    }
+    
+    if (!latestVote) {
+      throw new Error('Failed to create voting period');
+    }
+    
     // Verify the value is valid for this setting
     const setting = SETTINGS_CONFIG[sanitized.settingKey as keyof typeof SETTINGS_CONFIG];
     if (!setting) {
@@ -85,10 +117,10 @@ export async function submitVote(data: {
     // Check if user has already voted for this setting within voting period
     const existingVote = await SystemConfigCommunityVote.findOne({
       $or: [
-        { voter: sanitized.voter, settingKey: sanitized.settingKey },
-        { voterIpAddress: sanitized.voterIpAddress, settingKey: sanitized.settingKey }
+        { voter: sanitized.voter, settingKey: sanitized.settingKey, votingPeriodId: latestVote.votingPeriodId },
+        { voterIpAddress: sanitized.voterIpAddress, settingKey: sanitized.settingKey, votingPeriodId: latestVote.votingPeriodId }
       ],
-      votedAt: { $gt: new Date(Date.now() - VOTING_PERIOD) }
+      isActive: true
     }).session(dbSession);
 
     if (existingVote) {
@@ -98,7 +130,9 @@ export async function submitVote(data: {
     // Create the vote record
     await SystemConfigCommunityVote.create([{
       ...sanitized,
-      votedAt: new Date()
+      votedAt: new Date(),
+      votingPeriodId: latestVote.votingPeriodId,
+      isActive: true
     }], { session: dbSession });
 
     // Update vote counts
@@ -106,10 +140,11 @@ export async function submitVote(data: {
       {
         settingKey: sanitized.settingKey,
         optionValue: sanitized.selectedValue,
-        lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
+        votingPeriodId: latestVote.votingPeriodId,
+        isActive: true
       },
       { $inc: { votes: 1 } },
-      { new: true, upsert: true, session: dbSession }
+      { new: true, session: dbSession }
     );
 
     if (!updatedVote) {
@@ -120,7 +155,8 @@ export async function submitVote(data: {
 
     const allVotes = await SystemConfigVotes.find({
       settingKey: sanitized.settingKey,
-      lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
+      votingPeriodId: latestVote.votingPeriodId,
+      isActive: true
     });
     
      // Notify clients of the config update
@@ -133,7 +169,7 @@ export async function submitVote(data: {
       }
     });
 
-    return { success: true };
+    return { success: true, votingPeriodId: latestVote.votingPeriodId };
   } catch (error) {
     await dbSession.abortTransaction();
     throw error;
@@ -152,7 +188,8 @@ export async function updateSystemConfigWithWinningVotes() {
     const votes = await SystemConfigVotes.find({
       lastResetTime: { 
         $gt: previousPeriodStart 
-      }
+      },
+      isActive: true
     });
 
     // Group votes by settingKey

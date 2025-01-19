@@ -100,6 +100,7 @@ export interface ISystemConfigVotes {
   optionValue: number;
   votes: number;
   lastResetTime: Date;
+  votingPeriodId: string;
 }
 
 export interface ISystemConfigCommunityVote {
@@ -108,6 +109,8 @@ export interface ISystemConfigCommunityVote {
   settingKey: string; 
   selectedValue: number;
   votedAt: Date;
+  isActive: boolean;
+  votingPeriodId: string;
 }
 
 type DocumentType<T> = T & Document;

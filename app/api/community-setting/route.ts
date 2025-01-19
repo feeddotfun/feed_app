@@ -2,8 +2,6 @@ import { getSystemConfigAndVotes, submitVote } from '@/lib/actions/community-set
 import SystemConfigVotes from '@/lib/database/models/system-config-votes.model';
 import { BaseResponse, CommunitySettingData } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
-
-import { VOTING_PERIOD } from '@/constants/community-setting.config';
 import { getIpAddress, sendUpdate } from "@/lib/utils";
 
 
@@ -37,7 +35,8 @@ export async function POST(req: NextRequest) {
     if (result.success) {
       const updatedVote = await SystemConfigVotes.find({
         settingKey: body.settingKey,
-        lastResetTime: { $gt: new Date(Date.now() - VOTING_PERIOD) }
+        votingPeriodId: result.votingPeriodId,
+        isActive: true
       }).lean();
 
       sendUpdate('vote-update',{
