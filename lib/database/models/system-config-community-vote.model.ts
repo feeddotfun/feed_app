@@ -21,21 +21,36 @@ const SystemConfigCommunityVoteSchema = new Schema({
     votedAt: {
       type: Date,
       default: Date.now
+    },
+    votingPeriodId: {
+      type: String,
+      required: true
+    },
+    isActive: {
+      type: Boolean,
+      default: true
     }
   });
 
-SystemConfigCommunityVoteSchema.index(
-  { voter: 1, settingKey: 1 },
-  { unique: true, partialFilterExpression: {
-    votedAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-  }}
-);
-SystemConfigCommunityVoteSchema.index(
-  { voterIpAddress: 1, settingKey: 1 },
-  { unique: true, partialFilterExpression: {
-    votedAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-  }}
-);
+  SystemConfigCommunityVoteSchema.index(
+    { voter: 1, settingKey: 1, votingPeriodId: 1 },
+    { 
+      unique: true, 
+      partialFilterExpression: {
+        isActive: true
+      }
+    }
+  );
+  
+  SystemConfigCommunityVoteSchema.index(
+    { voterIpAddress: 1, settingKey: 1, votingPeriodId: 1 },
+    { 
+      unique: true, 
+      partialFilterExpression: {
+        isActive: true
+      }
+    }
+  );
 const SystemConfigCommunityVote:  Model<ISystemConfigCommunityVote> = models.SystemConfigCommunityVote || model<ISystemConfigCommunityVote>('SystemConfigCommunityVote', SystemConfigCommunityVoteSchema);
 
 export default SystemConfigCommunityVote;
