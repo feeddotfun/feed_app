@@ -15,6 +15,7 @@ import AddMeme from "./add-meme";
 import { useSessionTimer } from "@/hooks/use-session-timer";
 import WinnerMeme from "./winner-meme";
 import { TokenCreation } from "./token-creation";
+import { toast } from "sonner";
 
 interface MemeArenaProps {
   systemConfig: SystemConfig;
@@ -49,10 +50,11 @@ export default function MemeArena({ systemConfig }: MemeArenaProps) {
       await vote({
         session: session.id,
         meme: memeId,
-        voter: uuidv4(),
+        voter: publicKey?.toBase58()!,
         voterIpAddress: uuidv4()
       });
     } catch  {
+      toast.error('You have already voted in this session')
       throw new Error('Failed to vote')
     }
     finally {

@@ -4,7 +4,7 @@ import { BaseResponse, CommunitySettingData } from '@/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { VOTING_PERIOD } from '@/constants/community-setting.config';
-import { sendUpdate } from "@/lib/utils";
+import { getIpAddress, sendUpdate } from "@/lib/utils";
 
 
 export async function GET() {
@@ -27,8 +27,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    //!! just testing
-    const clientIp = (Math.random() + 1).toString(36) // getIpAddress(req);
+    const clientIp = await getIpAddress(req); //(Math.random() + 1).toString(36)
 
     const result = await submitVote({
       ...body,

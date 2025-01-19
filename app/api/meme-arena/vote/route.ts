@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { createMemeVote } from '@/lib/actions/meme-arena.action';
 import { VoteMemeParams } from '@/types';
 import { getIpAddress, sendUpdate } from "@/lib/utils";
-import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: Request) {
   try {
     const params: VoteMemeParams = await req.json();
-    const ipAddress = uuidv4();//await getIpAddress(req);
+    const ipAddress = await getIpAddress(req);
 
     const voteParams: VoteMemeParams = {
       ...params,

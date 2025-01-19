@@ -42,12 +42,12 @@ const CommunitySetting: React.FC = () => {
 
     try {
       await vote({
-        voter: (Math.random() + 1).toString(36).substring(7),  //publicKey.toString(), //!!! Just Testing
+        voter: publicKey.toString(), // (Math.random() + 1).toString(36).substring(7)
         settingKey,
         selectedValue
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit vote');
+      toast.error('Already voted for this setting in the current period');
     }
   };
 
